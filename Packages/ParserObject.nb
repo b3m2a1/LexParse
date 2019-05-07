@@ -1,0 +1,25 @@
+Notebook[{Cell[CellGroupData[{Cell["Parser", "CodeSection"], 
+     Cell[BoxData[RowBox[{RowBox[{RowBox[{"ParserObject", "::", "usage"}], 
+           "=", "\"An object for parsing a lexed stream\""}], ";"}]], 
+      "CodeInput"], Cell[CellGroupData[
+       {Cell[BoxData[RowBox[{RowBox[{"Begin", "[", "\"`Private`\"", "]"}], 
+            ";"}]], "InputSection"], 
+        Cell[BoxData[RowBox[{"RegisterInterface", "[", "\n", "  ", 
+            RowBox[{"ParserObject", ",", "\n", "  ", RowBox[{"{", 
+                RowBox[{"\"Lexer\"", ",", " ", "\"Handlers\""}], "}"}], ",", 
+              "\n", "  ", RowBox[{"\"Constructor\"", "\[Rule]", 
+                "ConstructParserObject"}]}], "\n", "  ", "]"}]], 
+         "CodeInput"], Cell[CellGroupData[
+          {Cell["\[LeftCeiling]Methods\[RightFloor]", "CodeSubsubsection", 
+            Evaluatable -> True], Cell[BoxData[RowBox[{RowBox[
+                {RowBox[{RowBox[{"InterfaceMethod", "[", "ParserObject", 
+                     "]"}], "@", "\n", "  ", RowBox[{RowBox[
+                      {"l_ParserObject", "[", "\"Parse\"", "]"}], "[", 
+                     "stream_", "]"}]}], ":=", "\n", "    ", RowBox[
+                  {"ApplyParser", "[", RowBox[{"l", ",", " ", "stream"}], 
+                   "]"}]}], ";"}]], "CodeInput"]}, Open]]}, Open]], 
+     Cell[BoxData[RowBox[{RowBox[{"End", "[", "]"}], ";"}]], 
+      "InputSection"]}, Open]], Cell["", "SectionSeparator"]}, 
+ FrontEndVersion -> "12.0 for Mac OS X x86 (64-bit) (April 8, 2019)", 
+ StyleDefinitions -> FrontEnd`FileName[{"BTools"}, "CodePackage.nb", 
+   CharacterEncoding -> "UTF-8"]]

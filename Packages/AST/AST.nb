@@ -1,0 +1,133 @@
+Notebook[{Cell[CellGroupData[{Cell["AST", "CodeSection"], 
+     Cell[BoxData[RowBox[{RowBox[{RowBox[{"ASTNode", "::", "usage"}], "=", 
+           "\"Symbolic rep of an AST node\""}], ";"}]], "CodeInput"], 
+     Cell[BoxData[{RowBox[{RowBox[{RowBox[{"ConstructASTObject", "::", 
+              "usage"}], "=", "\"\""}], ";"}], "\n", 
+        RowBox[{RowBox[{RowBox[{"AddASTNode", "::", "usage"}], "=", "\"\""}], 
+          ";"}], "\n", RowBox[{RowBox[{RowBox[{"MakeASTNode", "::", 
+              "usage"}], "=", "\"\""}], ";"}], "\n", 
+        RowBox[{RowBox[{RowBox[{"GetASTNode", "::", "usage"}], "=", "\"\""}], 
+          ";"}], "\n", RowBox[{RowBox[{RowBox[{"GetASTNodeProperty", "::", 
+              "usage"}], "=", "\"\""}], ";"}], "\n", 
+        RowBox[{RowBox[{RowBox[{"AddASTNodeData", "::", "usage"}], "=", 
+            "\"\""}], ";"}]}], "CodeInput"], 
+     Cell[CellGroupData[
+       {Cell[BoxData[RowBox[{RowBox[{"Begin", "[", "\"`Private`\"", "]"}], 
+            ";"}]], "InputSection"], Cell[CellGroupData[
+          {Cell["\[LeftCeiling]ConstructASTObject\[RightFloor]", 
+            "CodeSubsubsection", Evaluatable -> True], 
+           Cell[BoxData[{RowBox[{RowBox[{RowBox[{"ConstructASTObject", "[", 
+                    "]"}], ":=", "\n", "  ", RowBox[{"<|", "\n", "    ", 
+                    RowBox[{"\"Tree\"", "\[Rule]", RowBox[{"<|", "\n", 
+                        "      ", RowBox[{RowBox[{"\"Children\"", "\[Rule]", 
+                          RowBox[{"{", "}"}]}], ",", "\n", "      ", RowBox[
+                          {"\"Root\"", "\[Rule]", "True"}]}], "\n", "      ", 
+                        "|>"}]}], "\n", "    ", "|>"}]}], ";"}], "\n", 
+              RowBox[{RowBox[{"ConstructASTObject", "[", "a_Association", 
+                  "]"}], ":=", "\n", "  ", RowBox[{"If", "[", RowBox[
+                   {RowBox[{"KeyExistsQ", "[", RowBox[{"a", ",", " ", 
+                        "\"Tree\""}], "]"}], ",", "\n", "    ", "a", ",", 
+                    "\n", "    ", RowBox[{"<|", RowBox[{"\"Tree\"", 
+                        "\[Rule]", "a"}], "|>"}]}], "\n", "    ", "]"}]}]}], 
+            "CodeInput"]}, Open]], Cell[CellGroupData[
+          {Cell["\[LeftCeiling]AtomicASTNodeQ\[RightFloor]", 
+            "CodeSubsubsection", Evaluatable -> True], 
+           Cell[BoxData[RowBox[{RowBox[{RowBox[{"AtomicASTNodeQ", "[", 
+                   "node_", "]"}], ":=", "\n", "  ", RowBox[
+                  {RowBox[{"node", "[", "\"Children\"", "]"}], "===", 
+                   "None"}]}], ";"}]], "CodeInput"]}, Open]], 
+        Cell[CellGroupData[{Cell["\[LeftCeiling]MakeASTNode\[RightFloor]", 
+            "CodeSubsubsection", Evaluatable -> True], 
+           Cell[BoxData[{RowBox[{"MakeASTNode", "//", "Clear"}], "\n", 
+              RowBox[{RowBox[{RowBox[{"MakeASTNode", "[", RowBox[
+                     {"\"Atomic\"", ",", " ", "data_", ",", " ", RowBox[
+                       {"token_:", "None"}]}], "]"}], ":=", "\n", "  ", 
+                  RowBox[{"<|", "\n", "    ", RowBox[{RowBox[{"\"Children\"", 
+                        "\[Rule]", "None"}], ",", "\n", "    ", RowBox[
+                       {"\"Body\"", "\[Rule]", "data"}], ",", "\n", "    ", 
+                      RowBox[{"\"Token\"", "->", "token"}], ",", "\n", 
+                      "    ", RowBox[{"\"Root\"", "\[Rule]", "False"}]}], 
+                    "\n", "    ", "|>"}]}], ";"}], "\n", RowBox[{
+                RowBox[{RowBox[{"MakeASTNode", "[", RowBox[{"\"Compound\"", 
+                      ",", " ", "data_", ",", " ", RowBox[{"token_:", 
+                        "None"}]}], "]"}], ":=", "\n", "  ", RowBox[
+                   {"<|", "\n", "    ", RowBox[{RowBox[{"\"Children\"", 
+                        "\[Rule]", RowBox[{"Flatten", "@", RowBox[{"{", 
+                          "data", "}"}]}]}], ",", "\n", "    ", RowBox[
+                       {"\"Body\"", "\[Rule]", "None"}], ",", "\n", "    ", 
+                      RowBox[{"\"Token\"", "->", "token"}], ",", "\n", 
+                      "    ", RowBox[{"\"Root\"", "\[Rule]", "False"}]}], 
+                    "\n", "    ", "|>"}]}], ";"}], "\n", RowBox[{
+                RowBox[{"MakeASTNode", "[", "data_", "]"}], ":=", "\n", "  ", 
+                RowBox[{"If", "[", RowBox[{RowBox[{"!", RowBox[{"KeyExistsQ", 
+                        "[", RowBox[{"data", ",", " ", "\"Children\""}], 
+                        "]"}]}], ",", "\n", "  ", "  ", RowBox[
+                     {"MakeASTNode", "[", "\n", "  ", "    ", RowBox[
+                       {RowBox[{"If", "[", RowBox[{RowBox[{RowBox[{"data", 
+                          "[", "\"TokenType\"", "]"}], "===", 
+                          "\"BlockOpener\""}], ",", " ", "\"Compound\"", ",", 
+                          " ", "\"Atomic\""}], "]"}], ",", "\n", "  ", 
+                        "    ", "data", ",", "\n", "  ", "    ", RowBox[
+                         {"data", "[", "\"Token\"", "]"}]}], "\n", "  ", 
+                      "    ", "]"}], ",", "\n", "  ", "  ", "data"}], "\n", 
+                  "  ", "  ", "]"}]}]}], "CodeInput"]}, Closed]], 
+        Cell[CellGroupData[{Cell["\[LeftCeiling]GetASTNode\[RightFloor]", 
+            "CodeSubsubsection", Evaluatable -> True], 
+           Cell[BoxData[{RowBox[{RowBox[{RowBox[{"GetASTNode", "[", 
+                    RowBox[{"ast_Association", ",", " ", RowBox[{"part", ":", 
+                        RowBox[{"{", "__Integer", "}"}]}]}], "]"}], ":=", 
+                  "\n", "  ", RowBox[{"ast", "[", RowBox[{"[", RowBox[
+                       {"Sequence", "@@", RowBox[{"Riffle", "[", RowBox[
+                          {"part", ",", " ", "\"Children\""}], "]"}]}], 
+                      "]"}], "]"}]}], ";"}], "\n", RowBox[{RowBox[
+                 {"GetASTNode", "[", RowBox[{"ast_ASTObject", ",", " ", 
+                    "part_"}], "]"}], ":=", "\n", "  ", RowBox[{"GetASTNode", 
+                  "[", RowBox[{RowBox[{"ast", "[", "\"Tree\"", "]"}], ",", 
+                    " ", "part"}], "]"}]}]}], "CodeInput"]}, Closed]], 
+        Cell[CellGroupData[{Cell["\[LeftCeiling]AddASTNodeData\[RightFloor]", 
+            "CodeSubsubsection", Evaluatable -> True], 
+           Cell[BoxData[RowBox[{RowBox[{"AddASTNodeData", "[", RowBox[
+                  {"node_", ",", " ", "data_"}], "]"}], ":=", "\n", "  ", 
+               RowBox[{"ReplacePart", "[", RowBox[{"node", ",", " ", 
+                   RowBox[{"\"Children\"", "\[Rule]", RowBox[{"Append", "[", 
+                       RowBox[{RowBox[{"node", "[", "\"Children\"", "]"}], 
+                         ",", " ", "data"}], "]"}]}]}], "]"}]}]], 
+            "CodeInput"]}, Open]], Cell[CellGroupData[
+          {Cell["\[LeftCeiling]AddASTNode\[RightFloor]", "CodeSubsubsection", 
+            Evaluatable -> True], Cell["\[LeftCeiling]\n\tBasically this \
+needs to be able to determine what the type of data is (syntactically), \
+whether that means it should become an atomic or compound node, and then \
+insert in the AST at the current node position\n\t\n\tThe tree argument can \
+also actually just be a node\n\[RightFloor]", "Text", Evaluatable -> True], 
+           Cell[BoxData[RowBox[{RowBox[{"AddASTNode", "[", RowBox[{"tree_", 
+                   ",", " ", "data_"}], "]"}], ":=", "\n", "  ", RowBox[
+                {"AddASTNodeData", "[", RowBox[{"tree", ",", " ", 
+                   RowBox[{"MakeASTNode", "[", "data", "]"}]}], "]"}]}]], 
+            "CodeInput"]}, Open]], Cell[CellGroupData[
+          {Cell["\[LeftCeiling]GetASTNodeProperty\[RightFloor]", 
+            "CodeSubsubsection", Evaluatable -> True], Cell["\[LeftCeiling]\n\
+\tOnly supports a finite number of properties but is where new properties \
+should be put\n\[RightFloor]", "Text", Evaluatable -> True], 
+           Cell[BoxData[{RowBox[{RowBox[{RowBox[{"GetASTNodeProperty", "[", 
+                    RowBox[{"tree_", ",", " ", "\"Children\""}], "]"}], ":=", 
+                  "\n", "  ", RowBox[{"tree", "[", "\"Children\"", "]"}]}], 
+                ";"}], "\n", RowBox[{RowBox[{RowBox[{"GetASTNodeProperty", 
+                    "[", RowBox[{"tree_", ",", " ", "\"ChildCount\""}], 
+                    "]"}], ":=", "\n", "  ", RowBox[{"Length", "@", 
+                    RowBox[{"tree", "[", "\"Children\"", "]"}]}]}], ";"}]}], 
+            "CodeInput"]}, Open]]}, Open]], 
+     Cell[CellGroupData[{Cell["\[LeftCeiling]ASTNode\[RightFloor]", 
+         "CodeSubsection", Evaluatable -> True], 
+        Cell[BoxData[RowBox[{"RegisterInterface", "[", "\n", "  ", 
+            RowBox[{"ASTNode", ",", "\n", "  ", RowBox[{"{", RowBox[
+                 {"\"Children\"", ",", " ", "\"Root\"", ",", " ", 
+                  "\"Token\""}], "}"}], ",", "\n", "  ", RowBox[{
+                "\"Constructor\"", "->", "MakeASTNode"}]}], "\n", "  ", 
+            "]"}]], "CodeInput"], Cell["\[LeftCeiling]\n\tI\[CloseCurlyQuote]\
+m putting this here so I can eventually expand upon it if it turns out that \
+OOP for an AST is useful\n\[RightFloor]", "Text", Evaluatable -> True]}, 
+       Open]], Cell[BoxData[RowBox[{RowBox[{"End", "[", "]"}], ";"}]], 
+      "InputSection"]}, Open]], Cell["", "SectionSeparator"]}, 
+ FrontEndVersion -> "12.0 for Mac OS X x86 (64-bit) (April 8, 2019)", 
+ StyleDefinitions -> FrontEnd`FileName[{"BTools"}, "CodePackage.nb", 
+   CharacterEncoding -> "UTF-8"]]

@@ -1,0 +1,40 @@
+Notebook[{Cell[CellGroupData[{Cell["Lexer", "CodeSection"], 
+     Cell[BoxData[RowBox[{RowBox[{RowBox[{"LexerObject", "::", "usage"}], 
+           "=", "\"An object for lexing a stream\""}], ";"}]], "CodeInput"], 
+     Cell[CellGroupData[
+       {Cell[BoxData[RowBox[{RowBox[{"Begin", "[", "\"`Private`\"", "]"}], 
+            ";"}]], "InputSection"], 
+        Cell[BoxData[RowBox[{"RegisterInterface", "[", "\n", "  ", 
+            RowBox[{"LexerObject", ",", "\n", "  ", RowBox[{"{", 
+                "\"Tokens\"", "}"}], ",", "\n", "  ", RowBox[{
+                "\"Constructor\"", "\[Rule]", "ConstructLexerObject"}]}], 
+            "\n", "  ", "]"}]], "CodeInput"], 
+        Cell[CellGroupData[{Cell["\[LeftCeiling]Methods\[RightFloor]", 
+            "CodeSubsubsection", Evaluatable -> True], 
+           Cell[BoxData[{RowBox[{RowBox[{RowBox[{RowBox[{"InterfaceMethod", 
+                      "[", "LexerObject", "]"}], "@", "\n", "  ", RowBox[
+                     {RowBox[{"l_LexerObject", "[", "\"TokenStream\"", "]"}], 
+                      "[", "stream_", "]"}]}], ":=", "\n", "    ", 
+                  RowBox[{"TokenStream", "[", RowBox[{"l", ",", " ", 
+                      "stream"}], "]"}]}], ";"}], "\n", RowBox[{
+                RowBox[{RowBox[{"InterfaceMethod", "[", "LexerObject", "]"}], 
+                  "@", "\n", "  ", RowBox[{RowBox[{"l_LexerObject", "[", 
+                      "\"Read\"", "]"}], "[", RowBox[{"stream_", ",", " ", 
+                      RowBox[{"n", ":", RowBox[{"_Integer", "?", 
+                          "Positive"}], ":", "1"}]}], "]"}]}], ":=", "\n", 
+                "    ", RowBox[{"With", "[", RowBox[{RowBox[{"{", RowBox[
+                       {"ts", "=", RowBox[{"TokenStream", "[", RowBox[
+                          {"l", ",", " ", "stream"}], "]"}]}], "}"}], ",", 
+                    "\n", "      ", RowBox[{"Internal`WithLocalSettings", 
+                      "[", RowBox[{"\"\"", ",", "\n", "        ", RowBox[
+                         {"ts", "@", RowBox[{"\"Read\"", "[", "n", "]"}]}], 
+                        ",", "\n", "        ", RowBox[{"If", "[", RowBox[
+                          {RowBox[{"StringQ", "@", "stream"}], ",", " ", 
+                          RowBox[{"ts", "@", RowBox[{"\"Close\"", "[", 
+                          "]"}]}]}], "]"}]}], "\n", "        ", "]"}]}], 
+                  "\n", "      ", "]"}]}]}], "CodeInput"]}, Open]]}, Open]], 
+     Cell[BoxData[RowBox[{RowBox[{"End", "[", "]"}], ";"}]], 
+      "InputSection"]}, Open]], Cell["", "SectionSeparator"]}, 
+ FrontEndVersion -> "12.0 for Mac OS X x86 (64-bit) (April 8, 2019)", 
+ StyleDefinitions -> FrontEnd`FileName[{"BTools"}, "CodePackage.nb", 
+   CharacterEncoding -> "UTF-8"]]

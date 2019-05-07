@@ -1,0 +1,388 @@
+Notebook[{Cell[CellGroupData[{Cell["\[LeftCeiling]Tokens\[RightFloor]", 
+      "CodeSection", Evaluatable -> True], 
+     Cell[BoxData[RowBox[{RowBox[{RowBox[{"TokenStream", "::", "usage"}], 
+           "=", "\"An object representing a stream of tokens\""}], ";"}]], 
+      "CodeInput"], Cell[BoxData[
+       {RowBox[{RowBox[{RowBox[{"SetTokenizerCheckpoint", "::", "usage"}], 
+            "=", "\"Sets the Tokenizer checkpoint\""}], ";"}], "\n", 
+        RowBox[{RowBox[{RowBox[{"ResetTokenizerCheckpoint", "::", "usage"}], 
+            "=", "\"Reverts the Tokenizer checkpoint\""}], ";"}], "\n", 
+        RowBox[{RowBox[{RowBox[{"WithTokenizerCheckpoint", "::", "usage"}], 
+            "=", "\"Wrapper for tokenizing\""}], ";"}]}], "CodeInput"], 
+     Cell[BoxData[{RowBox[{RowBox[{RowBox[{"TokenRead", "::", "usage"}], "=", 
+            "\"Pulls n tokens out of a TokenStream\""}], ";"}], "\n", 
+        RowBox[{RowBox[{RowBox[{"TokenStreamer", "::", "usage"}], "=", 
+            "\"Lower-level object for faster token streaming\""}], ";"}]}], 
+      "CodeInput"], Cell[BoxData[RowBox[
+        {RowBox[{"Begin", "[", "\"`Private`\"", "]"}], ";"}]], 
+      "InputSection"], Cell[CellGroupData[
+       {Cell["\[LeftCeiling]TokenStream\[RightFloor]", "CodeSubsection", 
+         Evaluatable -> True], Cell[BoxData[RowBox[{"RegisterInterface", "[", 
+            "\n", "  ", RowBox[{"TokenStream", ",", "\n", "  ", 
+              RowBox[{"{", "\n", "    ", RowBox[{"\"Tokens\"", ",", "\n", 
+                  "    ", "\"Stream\""}], "\n", "    ", "}"}], ",", "\n", 
+              "  ", RowBox[{"\"Constructor\"", "\[Rule]", 
+                "buildTokenStream"}]}], "\n", "  ", "]"}]], "CodeInput"], 
+        Cell[CellGroupData[
+          {Cell["\[LeftCeiling]buildTokenStream\[RightFloor]", 
+            "CodeSubsubsubsection", Evaluatable -> True], 
+           Cell[BoxData[{RowBox[{RowBox[{RowBox[{"buildTokenStream", "[", 
+                    RowBox[{"l_LexerObject", ",", " ", "i_InputStream"}], 
+                    "]"}], ":=", "\n", "  ", RowBox[{"<|", RowBox[
+                     {RowBox[{"\"Tokens\"", "\[Rule]", RowBox[{"l", "[", 
+                          "\"Tokens\"", "]"}]}], ",", " ", RowBox[
+                       {"\"Stream\"", "\[Rule]", "i"}]}], "|>"}]}], ";"}], 
+              "\n", RowBox[{RowBox[{RowBox[{"buildTokenStream", "[", 
+                    RowBox[{"l_LexerObject", ",", " ", RowBox[{"s_String", 
+                        "?", RowBox[{"(", RowBox[{"Not", "@*", 
+                          "FileExistsQ"}], ")"}]}]}], "]"}], ":=", "\n", 
+                  "  ", RowBox[{"buildTokenStream", "[", RowBox[{"l", ",", 
+                      " ", RowBox[{"StringToStream", "[", "s", "]"}]}], 
+                    "]"}]}], ";"}], "\n", RowBox[{RowBox[
+                 {RowBox[{"buildTokenStream", "[", RowBox[{"l_LexerObject", 
+                      ",", " ", RowBox[{"s_String", "?", RowBox[{"(", 
+                          "FileExistsQ", ")"}]}]}], "]"}], ":=", "\n", " ", 
+                  RowBox[{"buildTokenStream", "[", RowBox[{"l", ",", " ", 
+                      RowBox[{"OpenRead", "[", "s", "]"}]}], "]"}]}], 
+                ";"}]}], "CodeInput"]}, Closed]], 
+        Cell[CellGroupData[{Cell["\[LeftCeiling]Methods\[RightFloor]", 
+            "CodeSubsubsubsection", Evaluatable -> True], 
+           Cell[BoxData[{RowBox[{RowBox[{RowBox[{RowBox[{"InterfaceMethod", 
+                      "[", "TokenStream", "]"}], "@", "\n", "  ", RowBox[
+                     {RowBox[{"t_TokenStream", "[", "\"Read\"", "]"}], "[", 
+                      RowBox[{"n", ":", RowBox[{"_Integer", "?", 
+                          "Positive"}], ":", "1"}], "]"}]}], ":=", "\n", 
+                  "    ", RowBox[{"TokenRead", "[", RowBox[{"t", ",", " ", 
+                      "n"}], "]"}]}], ";"}], "\n", RowBox[{RowBox[
+                 {RowBox[{RowBox[{"InterfaceMethod", "[", "TokenStream", 
+                      "]"}], "@", "\n", "  ", RowBox[{RowBox[
+                       {"t_TokenStream", "[", "\"Streamer\"", "]"}], "[", 
+                      "]"}]}], ":=", "\n", "    ", RowBox[{"TokenStreamer", 
+                    "[", "t", "]"}]}], ";"}], "\n", RowBox[{RowBox[
+                 {RowBox[{RowBox[{"InterfaceMethod", "[", "TokenStream", 
+                      "]"}], "@", "\n", "  ", RowBox[{RowBox[
+                       {"t_TokenStream", "[", "\"Close\"", "]"}], "[", 
+                      "]"}]}], ":=", "\n", "    ", RowBox[{"Close", "@", 
+                    RowBox[{"t", "[", "\"Stream\"", "]"}]}]}], ";"}]}], 
+            "CodeInput"]}, Open]]}, Open]], 
+     Cell[CellGroupData[{Cell["\[LeftCeiling]TokenRead\[RightFloor]", 
+         "CodeSubsection", Evaluatable -> True], 
+        Cell[CellGroupData[{Cell["\[LeftCeiling]$checkpoints\[RightFloor]", 
+            "CodeSubsubsection", Evaluatable -> True], Cell["\[LeftCeiling]\n\
+\tMight be better to do with Language`ExpressionStore ?\n\[RightFloor]", 
+            "Text", Evaluatable -> True], Cell[BoxData[
+             RowBox[{RowBox[{"If", "[", RowBox[{RowBox[{"!", RowBox[
+                      {"AssociationQ", "[", "$checkpoints", "]"}]}], ",", 
+                   " ", RowBox[{"$checkpoints", "=", RowBox[{"<|", 
+                       "|>"}]}]}], "]"}], ";"}]], "CodeInput"], 
+           Cell[BoxData[{RowBox[{RowBox[{RowBox[{"SetTokenizerCheckpoint", 
+                    "[", "stream_", "]"}], ":=", "\n", "  ", RowBox[
+                   {RowBox[{"$checkpoints", "[", "stream", "]"}], " ", "=", 
+                    " ", RowBox[{"StreamPosition", "[", "stream", "]"}]}]}], 
+                ";"}], "\n", RowBox[{RowBox[{RowBox[
+                   {"ResetTokenizerCheckpoint", "[", "stream_", "]"}], ":=", 
+                  "\n", "  ", RowBox[{"SetStreamPosition", "[", RowBox[
+                     {"stream", ",", " ", RowBox[{"$checkpoints", "[", 
+                        "stream", "]"}]}], "]"}]}], ";"}], "\n", 
+              RowBox[{RowBox[{RowBox[{"WithTokenizerCheckpoint", "[", 
+                    RowBox[{"stream_", ",", " ", "expr_"}], "]"}], ":=", 
+                  "\n", "  ", RowBox[{"Block", "[", RowBox[{RowBox[{"{", 
+                        RowBox[{"$checkpoints", " ", "=", " ", RowBox[{"If", 
+                          "[", RowBox[{RowBox[{"!", RowBox[{"AssociationQ", 
+                          "[", "$checkpoints", "]"}]}], ",", " ", RowBox[
+                          {"<|", "|>"}], ",", " ", "$checkpoints"}], "]"}]}], 
+                        "}"}], ",", "\n", "    ", RowBox[{RowBox[
+                         {"SetTokenizerCheckpoint", "[", "stream", "]"}], 
+                        ";", "\n", "    ", "expr"}]}], "\n", "    ", "]"}]}], 
+                ";"}], "\n", RowBox[{RowBox[{"WithTokenizerCheckpoint", "~", 
+                  "SetAttributes", "~", "HoldRest"}], ";"}]}], "CodeInput"]}, 
+          Closed]], Cell[CellGroupData[
+          {Cell["\[LeftCeiling]readStringToken\[RightFloor]", 
+            "CodeSubsubsection", Evaluatable -> True], 
+           Cell[BoxData[RowBox[{RowBox[{RowBox[{"readStringToken", "[", 
+                   RowBox[{"tok_", ",", " ", RowBox[{"escape_:", 
+                       "\"\\\\\""}]}], "]"}], "[", RowBox[{"stream_", ",", 
+                   " ", "body_", ",", " ", "token_"}], "]"}], ":=", "\n", 
+               "  ", RowBox[{"Module", "[", "\n", "    ", RowBox[
+                  {RowBox[{"{", "\n", "      ", RowBox[{"tmp", ",", "\n", 
+                       "      ", RowBox[{"str", " ", "=", " ", RowBox[
+                          {"Read", "[", RowBox[{"stream", ",", " ", "Record", 
+                          ",", " ", RowBox[{"RecordSeparators", "\[Rule]", 
+                          RowBox[{"{", "tok", "}"}]}]}], "]"}]}]}], "\n", 
+                     "      ", "}"}], ",", "\n", "    ", RowBox[
+                    {RowBox[{"While", "[", RowBox[{RowBox[{RowBox[{"StringQ", 
+                          "[", "str", "]"}], "&&", RowBox[{"StringEndsQ", 
+                          "[", RowBox[{"str", ",", " ", "escape"}], "]"}]}], 
+                         ",", "\n", "      ", RowBox[{RowBox[{"tmp", " ", 
+                          "=", " ", RowBox[{"Read", "[", RowBox[{"stream", 
+                          ",", " ", "Record", ",", " ", RowBox[
+                          {"RecordSeparators", "\[Rule]", RowBox[{"{", "tok", 
+                          "}"}]}]}], "]"}]}], ";", "\n", "      ", RowBox[
+                          {"If", "[", RowBox[{RowBox[{"tmp", "===", 
+                          "EndOfFile"}], ",", " ", RowBox[{"Break", "[", 
+                          "]"}]}], "]"}], ";", "\n", "      ", RowBox[{"str", 
+                          " ", "=", " ", RowBox[{"str", "<>", "tok", "<>", 
+                          "tmp"}]}], ";"}]}], "\n", "      ", "]"}], ";", 
+                     "\n", "    ", "str"}]}], "\n", "    ", "]"}]}]], 
+            "CodeInput"]}, Closed]], Cell[CellGroupData[
+          {Cell["\[LeftCeiling]readLookAhead\[RightFloor]", 
+            "CodeSubsubsection", Evaluatable -> True], 
+           Cell[BoxData[{RowBox[{RowBox[{RowBox[{"readLookAhead", "[", 
+                    "lookAheadDispatcher_", "]"}], ":=", "\n", "  ", 
+                  RowBox[{"readLookAhead", "[", RowBox[
+                     {"lookAheadDispatcher", ",", " ", RowBox[{"tokenPuller", 
+                        "[", RowBox[{"Keys", "[", "lookAheadDispatcher", 
+                          "]"}], "]"}]}], "]"}]}], ";"}], "\n", 
+              RowBox[{RowBox[{RowBox[{"readLookAhead", "[", RowBox[
+                     {"lookAheadDispatcher_", ",", " ", "tokenPuller_"}], 
+                    "]"}], "[", RowBox[{"stream_", ",", " ", "body_", ",", 
+                    " ", "token_"}], "]"}], ":=", "\n", "  ", RowBox[
+                 {RowBox[{"lookAheadDispatcher", "[", RowBox[{"tokenPuller", 
+                      "[", "stream", "]"}], "]"}], "[", RowBox[{"stream", 
+                    ",", " ", "body", ",", " ", "token"}], "]"}]}]}], 
+            "CodeInput"]}, Open]], Cell[CellGroupData[
+          {Cell["\[LeftCeiling]TokenStreamer\[RightFloor]", 
+            "CodeSubsubsection", Evaluatable -> True], Cell["\[LeftCeiling]\n\
+\tDesigned to be as minimal overhead as can still be \
+convenient\n\[RightFloor]", "Text", Evaluatable -> True], 
+           Cell[BoxData[{RowBox[{RowBox[{RowBox[{"TokenStreamer", "[", "t_", 
+                    "]"}], ":=", "\n", "  ", RowBox[{"Module", "[", 
+                    RowBox[{RowBox[{"{", RowBox[{RowBox[{"stream", "=", 
+                          RowBox[{"t", "[", "\"Stream\"", "]"}]}], ",", " ", 
+                          RowBox[{"spec", "=", RowBox[{"prepTokenHandlers", 
+                          "@", RowBox[{"t", "[", "\"Tokens\"", "]"}]}]}]}], 
+                        "}"}], ",", "\n", "    ", RowBox[{"TokenStreamer", 
+                        "[", RowBox[{"stream", ",", " ", "spec", ",", " ", 
+                          "t"}], "]"}]}], "\n", "    ", "]"}]}], ";"}], "\n", 
+              RowBox[{RowBox[{RowBox[{"TokenStreamer", "[", RowBox[
+                     {"stream_", ",", " ", "spec_", ",", " ", "t_"}], "]"}], 
+                  ":=", "\n", "  ", RowBox[{"TokenStreamer", "[", RowBox[
+                     {"{", "\n", "    ", RowBox[{"t", ",", "\n", "    ", 
+                        "stream", ",", "\n", "    ", RowBox[{"spec", "[", 
+                          "\"Handlers\"", "]"}], ",", " ", "\n", "    ", 
+                        RowBox[{"spec", "[", "\"Characters\"", "]"}], ",", 
+                        "\n", "    ", RowBox[{"tokenPuller", "[", RowBox[
+                          {"spec", "[", "\"Characters\"", "]"}], "]"}]}], 
+                      "\n", "    ", "}"}], "]"}]}], ";"}], "\n", 
+              RowBox[{RowBox[{RowBox[{"TokenStreamer", "[", RowBox[
+                     {"{", RowBox[{"t_", ",", " ", "stream_", ",", " ", 
+                        "handlers_", ",", " ", "seps_", ",", " ", 
+                        "tokPuller_"}], "}"}], "]"}], "[", "n_", "]"}], ":=", 
+                "\n", "  ", RowBox[{"Module", "[", RowBox[{RowBox[{"{", 
+                      RowBox[{"body", ",", " ", "token"}], "}"}], ",", "\n", 
+                    "    ", RowBox[{"Table", "[", "\n", "      ", RowBox[
+                       {RowBox[{RowBox[{"body", " ", "=", " ", "\n", 
+                          "        ", RowBox[{"Read", "[", RowBox[{"stream", 
+                          ",", " ", "Record", ",", "\n", "  ", "        ", 
+                          RowBox[{"RecordSeparators", "\[Rule]", "seps"}]}], 
+                          "\n", "  ", "        ", "]"}]}], ";", "\n", "  ", 
+                          "    ", RowBox[{"If", "[", RowBox[{RowBox[{"body", 
+                          "===", "EndOfFile"}], ",", " ", "\n", "  ", 
+                          "      ", RowBox[{RowBox[{"handlers", "[", 
+                          "EndOfFile", "]"}], "[", "\n", "  ", "        ", 
+                          RowBox[{"t", ",", "\n", "  ", "        ", 
+                          "EndOfFile", ",", "\n", "  ", "        ", 
+                          "EndOfFile"}], "\n", "  ", "        ", "]"}], ",", 
+                          "\n", "  ", "      ", RowBox[{RowBox[{"token", " ", 
+                          "=", " ", RowBox[{"tokPuller", "[", "stream", 
+                          "]"}]}], ";", "\n", "  ", "      ", RowBox[
+                          {RowBox[{"handlers", "[", "token", "]"}], "[", 
+                          "\n", "  ", "        ", RowBox[{"t", ",", "\n", 
+                          "  ", "        ", "body", ",", "\n", "  ", 
+                          "        ", "token"}], "\n", "          ", 
+                          "]"}]}]}], "\n", "        ", "]"}]}], ",", "\n", 
+                        "      ", "n"}], "\n", "      ", "]"}]}], "\n", 
+                  "    ", "]"}]}]}], "CodeInput"]}, Closed]], 
+        Cell[CellGroupData[{Cell["\[LeftCeiling]tokenRead\[RightFloor]", 
+            "CodeSubsubsection", Evaluatable -> True], 
+           Cell[CellGroupData[{Cell["\[LeftCeiling]tokenPuller\[RightFloor]", 
+               "CodeSubsubsubsection", Evaluatable -> True], Cell[BoxData[
+                {RowBox[{RowBox[{RowBox[{"tokenPuller", "[", "tokens_", 
+                       "]"}], ":=", "\n", "  ", RowBox[{"tokenPuller", "[", 
+                       "\n", "    ", RowBox[{RowBox[{"AssociationThread", 
+                          "[", RowBox[{RowBox[{"Keys", "[", "tokens", "]"}], 
+                          ",", " ", "None"}], "]"}], ",", " ", "\n", "    ", 
+                         RowBox[{"Min", "[", RowBox[{"StringLength", "/@", 
+                          RowBox[{"Select", "[", RowBox[{"tokens", ",", " ", 
+                          "StringQ"}], "]"}]}], "]"}]}], "\n", "    ", 
+                       "]"}]}], ";"}], "\n", RowBox[{RowBox[{RowBox[
+                      {RowBox[{"tokenPuller", "[", RowBox[{"tokSet_", ",", 
+                          " ", "min_"}], "]"}], "[", "stream_", "]"}], ":=", 
+                     "\n", "  ", RowBox[{"pullTokenToo", "[", RowBox[
+                        {"stream", ",", " ", "tokSet", ",", " ", "min"}], 
+                       "]"}]}], ";"}], "\n", RowBox[{RowBox[{"pullTokenToo", 
+                     "[", RowBox[{"stream_", ",", " ", "tokSet_", ",", " ", 
+                       "minTok_"}], "]"}], ":=", "\n", "  ", RowBox[
+                    {"Module", "[", RowBox[{RowBox[{"{", RowBox[{RowBox[
+                          {"tok", "=", RowBox[{"ReadList", "[", RowBox[
+                          {"stream", ",", " ", "Character", ",", " ", 
+                          "minTok"}], "]"}]}], ",", " ", "tmp"}], "}"}], ",", 
+                       "\n", "    ", RowBox[{RowBox[{"If", "[", RowBox[
+                          {RowBox[{"AllTrue", "[", RowBox[{"tok", ",", " ", 
+                          "StringQ"}], "]"}], ",", "\n", "      ", RowBox[
+                          {"tok", " ", "=", " ", RowBox[{"StringJoin", "[", 
+                          "tok", "]"}]}], ",", "\n", "      ", RowBox[
+                          {"Return", "[", RowBox[{"EndOfFile", ",", " ", 
+                          "Module"}], "]"}]}], "\n", "      ", "]"}], ";", 
+                         "\n", "    ", RowBox[{"While", "[", RowBox[
+                          {RowBox[{"!", RowBox[{"KeyExistsQ", "[", RowBox[
+                          {"tokSet", ",", " ", "tok"}], "]"}]}], ",", "\n", 
+                          "      ", RowBox[{RowBox[{"tmp", " ", "=", " ", 
+                          RowBox[{"Read", "[", RowBox[{"stream", ",", " ", 
+                          "Character"}], "]"}]}], ";", "\n", "      ", RowBox[
+                          {"If", "[", RowBox[{RowBox[{"tmp", "===", 
+                          "EndOfFile"}], ",", " ", RowBox[{"Return", "[", 
+                          RowBox[{"EndOfFile", ",", " ", "Module"}], "]"}]}], 
+                          "]"}], ";", "\n", "      ", RowBox[{"tok", " ", 
+                          "=", " ", RowBox[{"tok", "<>", "tmp"}]}], ";"}]}], 
+                          "\n", "      ", "]"}], ";", "\n", "    ", 
+                         "tok"}]}], "\n", "    ", "]"}]}]}], "CodeInput"]}, 
+             Closed]], Cell[CellGroupData[
+             {Cell["\[LeftCeiling]tokenRead\[RightFloor]", 
+               "CodeSubsubsubsection", Evaluatable -> True], Cell[BoxData[
+                RowBox[{RowBox[{RowBox[{"tokenRead", "[", RowBox[{"stream_", 
+                        ",", " ", "spec_", ",", " ", "t_"}], "]"}], ":=", 
+                    "\n", "  ", RowBox[{RowBox[{RowBox[{"tokenStreamer", "[", 
+                          RowBox[{"stream", ",", " ", "spec", ",", " ", 
+                          "t"}], "]"}], "[", "1", "]"}], "[", RowBox[
+                       {"[", "1", "]"}], "]"}]}], ";"}]], "CodeInput"]}, 
+             Open]], Cell[CellGroupData[
+             {Cell["\[LeftCeiling]tokenReadList\[RightFloor]", 
+               "CodeSubsubsubsection", Evaluatable -> True], 
+              Cell[CellGroupData[{Cell["\[LeftCeiling]old\[RightFloor]", 
+                  "CodeSubsubsubsubsection", Evaluatable -> True], 
+                 Cell["\[LeftCeiling]\n\tRealized this won\[CloseCurlyQuote]t \
+work as the Handler gets applied too late...\n\[RightFloor]", "Text", 
+                  Evaluatable -> True], Cell[BoxData[RowBox[{RowBox[
+                      {RowBox[{"otokenReadList", "[", RowBox[{"stream_", ",", 
+                          " ", "spec_", ",", " ", "n_"}], "]"}], ":=", "\n", 
+                       "  ", RowBox[{"Module", "[", "\n", "    ", RowBox[
+                          {RowBox[{"{", "\n", "      ", RowBox[{"body", ",", 
+                          " ", "token", ",", " ", "final", ",", " ", 
+                          "strPos", ",", "\n", "        ", RowBox[
+                          {"handlers", "=", RowBox[{"spec", "[", 
+                          "\"Handlers\"", "]"}]}], ",", " ", "\n", 
+                          "        ", RowBox[{"seps", "=", RowBox[{"spec", 
+                          "[", "\"Characters\"", "]"}]}], ",", "\n", 
+                          "        ", "nullHandle", ",", " ", "read"}], "\n", 
+                          "        ", "}"}], ",", "\n", "    ", RowBox[
+                          {RowBox[{"body", " ", "=", " ", "\n", "      ", 
+                          RowBox[{"ReadList", "[", RowBox[{"stream", ",", 
+                          " ", "Record", ",", " ", "n", ",", "\n", 
+                          "        ", RowBox[{"RecordSeparators", "\[Rule]", 
+                          "seps"}]}], "\n", "        ", "]"}]}], ";", "\n", 
+                          "    ", RowBox[{"body", " ", "=", " ", RowBox[
+                          {"PadRight", "[", RowBox[{"body", ",", " ", "n", 
+                          ",", " ", "EndOfFile"}], "]"}]}], ";", "\n", 
+                          "    ", RowBox[{"final", " ", "=", " ", RowBox[
+                          {"Read", "[", RowBox[{"stream", ",", " ", 
+                          "Character"}], "]"}]}], ";", "\n", "    ", RowBox[
+                          {"strPos", " ", "=", " ", RowBox[{"Pick", "[", 
+                          RowBox[{RowBox[{"Range", "[", "n", "]"}], ",", " ", 
+                          RowBox[{"StringQ", "/@", "body"}]}], "]"}]}], ";", 
+                          "\n", "    ", RowBox[{"If", "[", RowBox[{RowBox[
+                          {RowBox[{"Length", "@", "strPos"}], " ", "<", " ", 
+                          "2"}], ",", "\n", "      ", RowBox[{RowBox[
+                          {"nullHandle", " ", "=", " ", RowBox[{"Lookup", 
+                          "[", RowBox[{"handlers", ",", " ", "EndOfFile", 
+                          ",", " ", "LexerToken"}], "]"}]}], ";", "\n", 
+                          "      ", RowBox[{"Return", "[", "\n", "        ", 
+                          RowBox[{RowBox[{"Map", "[", "\n", "          ", 
+                          RowBox[{RowBox[{RowBox[{"nullHandle", "[", "\n", 
+                          "            ", RowBox[{"stream", ",", "\n", 
+                          "            ", "#", ",", "\n", "            ", 
+                          "EndOfFile"}], "\n", "            ", "]"}], "&"}], 
+                          ",", "\n", "          ", "body"}], "\n", 
+                          "          ", "]"}], ",", " ", "\n", "        ", 
+                          "Module"}], "\n", "        ", "]"}]}]}], "\n", 
+                          "      ", "]"}], ";", "\n", "    ", RowBox[
+                          {"strPos", " ", "=", " ", RowBox[{"Rest", "@", 
+                          "strPos"}]}], ";", "\n", "    ", RowBox[{"token", 
+                          " ", "=", " ", RowBox[{"StringTake", "[", RowBox[
+                          {RowBox[{"body", "[", RowBox[{"[", "strPos", "]"}], 
+                          "]"}], ",", " ", "1"}], "]"}]}], ";", "\n", "    ", 
+                          RowBox[{"If", "[", RowBox[{RowBox[{RowBox[{"n", 
+                          "-", RowBox[{"Max", "[", "strPos", "]"}]}], ">", 
+                          "0"}], ",", "\n", "      ", RowBox[{"token", " ", 
+                          "=", " ", RowBox[{"Join", "[", RowBox[{"token", 
+                          ",", " ", RowBox[{"ConstantArray", "[", RowBox[
+                          {"EndOfFile", ",", " ", RowBox[{"n", "-", RowBox[
+                          {"Max", "[", "strPos", "]"}]}]}], "]"}]}], 
+                          "]"}]}]}], "\n", "      ", "]"}], ";", "\n", 
+                          "    ", RowBox[{"token", " ", "=", " ", RowBox[
+                          {"Append", "[", RowBox[{"token", ",", " ", 
+                          "final"}], "]"}]}], ";", "\n", "    ", RowBox[
+                          {"MapThread", "[", "\n", "      ", RowBox[{RowBox[
+                          {RowBox[{"#", "[", RowBox[{"stream", ",", " ", 
+                          "#2", ",", " ", "#3"}], "]"}], "&"}], ",", "\n", 
+                          "      ", RowBox[{"{", "\n", "        ", RowBox[
+                          {RowBox[{"Lookup", "[", RowBox[{"handlers", ",", 
+                          " ", "token", ",", " ", "LexerToken"}], "]"}], ",", 
+                          "\n", "        ", "body", ",", "\n", "        ", 
+                          "token"}], "\n", "        ", "}"}]}], "\n", 
+                          "      ", "]"}]}]}], "\n", "    ", "]"}]}], ";"}]], 
+                  "CodeInput"]}, Closed]], Cell[CellGroupData[
+                {Cell["\[LeftCeiling]new\[RightFloor]", 
+                  "CodeSubsubsubsubsection", Evaluatable -> True], 
+                 Cell[BoxData[RowBox[{RowBox[{"tokenReadList", "[", RowBox[
+                        {"stream_", ",", " ", "spec_", ",", " ", "n_", ",", 
+                         " ", "t_"}], "]"}], ":=", "\n", "  ", RowBox[
+                      {RowBox[{"tokenStreamer", "[", RowBox[{"stream", ",", 
+                          " ", "spec", ",", " ", "t"}], "]"}], "[", "n", 
+                       "]"}]}]], "CodeInput"]}, Open]]}, Open]]}, Open]], 
+        Cell[CellGroupData[{Cell["\[LeftCeiling]TokenRead\[RightFloor]", 
+            "CodeSubsubsection", Evaluatable -> True], 
+           Cell[CellGroupData[
+             {Cell["\[LeftCeiling]prepTokenHandlers\[RightFloor]", 
+               "CodeSubsubsubsection", Evaluatable -> True], Cell[BoxData[
+                {RowBox[{RowBox[{"prepTokenHandler", "//", "Clear"}], ";"}], 
+                 "\n", RowBox[{RowBox[{RowBox[{"prepTokenHandler", "[", 
+                       RowBox[{"{", RowBox[{"\"Stream\"", ",", " ", "char_", 
+                          ",", " ", "escape___"}], "}"}], "]"}], ":=", 
+                     RowBox[{"readString", "[", RowBox[{"char", ",", " ", 
+                         "escape"}], "]"}]}], ";"}], "\n", RowBox[
+                  {RowBox[{RowBox[{"prepTokenHandler", "[", RowBox[{"{", 
+                         RowBox[{"\"LookAhead\"", ",", " ", "dispatch_"}], 
+                         "}"}], "]"}], ":=", RowBox[{"readLookAhead", "[", 
+                       "dispatch", "]"}]}], ";"}], "\n", RowBox[
+                  {RowBox[{RowBox[{"prepTokenHandler", "[", "e_", "]"}], 
+                     ":=", "e"}], ";"}]}], "CodeInput"], Cell[BoxData[
+                RowBox[{RowBox[{"prepTokenHandlers", "[", "tokens_", "]"}], 
+                  ":=", "\n", "  ", RowBox[{"ReplacePart", "[", "\n", "    ", 
+                    RowBox[{"tokens", ",", "\n", "    ", RowBox[
+                       {"\"Handlers\"", "->", "\n", "      ", RowBox[{"Join", 
+                          "[", "\n", "        ", RowBox[{RowBox[{"<|", "\n", 
+                          "          ", RowBox[{"EndOfFile", "\[Rule]", 
+                          "LexerToken"}], "\n", "          ", "|>"}], ",", 
+                          "\n", "        ", RowBox[{"Map", "[", "\n", 
+                          "          ", RowBox[{"prepTokenHandler", ",", 
+                          "\n", "          ", RowBox[{"tokens", "[", 
+                          "\"Handlers\"", "]"}]}], "\n", "          ", 
+                          "]"}]}], "\n", "        ", "]"}]}]}], "\n", "    ", 
+                    "]"}]}]], "CodeInput"]}, Open]], 
+           Cell[CellGroupData[{Cell["\[LeftCeiling]TokenRead\[RightFloor]", 
+               "CodeSubsubsubsection", Evaluatable -> True], Cell[BoxData[
+                RowBox[{RowBox[{RowBox[{"TokenRead", "[", RowBox[
+                       {"t_TokenStream", ",", " ", RowBox[{"n", ":", RowBox[
+                          {"_Integer", "?", "Positive"}], ":", "1"}]}], 
+                      "]"}], ":=", "\n", "  ", RowBox[{"Module", "[", 
+                      RowBox[{RowBox[{"{", RowBox[{RowBox[{"stream", "=", 
+                          RowBox[{"t", "[", "\"Stream\"", "]"}]}], ",", " ", 
+                          RowBox[{"spec", "=", RowBox[{"prepTokenHandlers", 
+                          "@", RowBox[{"t", "[", "\"Tokens\"", "]"}]}]}]}], 
+                          "}"}], ",", "\n", "    ", RowBox[
+                         {"WithTokenizerCheckpoint", "[", "\n", "      ", 
+                          RowBox[{"stream", ",", "\n", "      ", RowBox[
+                          {"If", "[", RowBox[{RowBox[{"n", ">", "1"}], ",", 
+                          " ", "\n", "        ", RowBox[{"tokenReadList", 
+                          "[", RowBox[{"stream", ",", " ", "spec", ",", " ", 
+                          "n", ",", " ", "t"}], "]"}], ",", "\n", "        ", 
+                          RowBox[{"tokenRead", "[", RowBox[{"stream", ",", 
+                          " ", "spec", ",", " ", "t"}], "]"}]}], "\n", 
+                          "        ", "]"}]}], "\n", "      ", "]"}]}], "\n", 
+                      "    ", "]"}]}], ";"}]], "CodeInput"]}, Open]]}, 
+          Open]]}, Open]], Cell[BoxData[RowBox[{RowBox[{"End", "[", "]"}], 
+         ";"}]], "InputSection"]}, Open]], Cell["", "SectionSeparator"]}, 
+ FrontEndVersion -> "12.0 for Mac OS X x86 (64-bit) (April 8, 2019)", 
+ StyleDefinitions -> FrontEnd`FileName[{"BTools"}, "CodePackage.nb", 
+   CharacterEncoding -> "UTF-8"]]
