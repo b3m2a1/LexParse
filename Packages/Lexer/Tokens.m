@@ -153,7 +153,7 @@ TokenStreamer[stream_, spec_, t_]:=
     spec["Characters"],
     tokenPuller[spec["Characters"]]
     }];
-TokenStreamer[{t_, stream_, handlers_, seps_, tokPuller_}][n_]:=
+TokenStreamerRead[TokenStreamer[{t_, stream_, handlers_, seps_, tokPuller_}], n_]:=
   Module[{body, token},
     Table[
       body = 
@@ -176,6 +176,20 @@ TokenStreamer[{t_, stream_, handlers_, seps_, tokPuller_}][n_]:=
       n
       ]
     ]
+(tks:TokenStreamer[{t_, stream_, handlers_, seps_, tokPuller_}])@"Read"[n_]:=
+  WithTokenizerCheckpoint[
+    stream,
+    TokenStreamerRead[tks, n]
+    ];
+ (tks:TokenStreamer[{t_, stream_, handlers_, seps_, tokPuller_}])@"Read"[]:=
+   (tks@"Read"[1])[[1]];
+ (tks:TokenStreamer[{t_, stream_, handlers_, seps_, tokPuller_}])@"Peek"[n_]:=
+   WithTokenizerCheckpoint[
+     stream,
+     (ResetTokenizerCheckpoint[stream]; #)&@TokenStreamerRead[tks, n]
+     ];
+  (tks:TokenStreamer[{t_, stream_, handlers_, seps_, tokPuller_}])@"Peek"[]:=
+   (tks@"Peek"[1])[[1]];
 
 
 (* ::Subsubsection::Closed:: *)
@@ -216,7 +230,16 @@ pullTokenToo[stream_, tokSet_, minTok_]:=
 
 
 tokenRead[stream_, spec_, t_]:=
-  tokenStreamer[stream, spec, t][1][[1]];
+  TokenStreamer[stream, spec, t]@"Read"[];
+
+
+(* ::Subsubsubsection::Closed:: *)
+(*tokenPeek*)
+
+
+
+tokenRead[stream_, spec_, t_]:=
+  TokenStreamer[stream, spec, t]@"Peek"[];
 
 
 (* ::Subsubsubsection::Closed:: *)
@@ -288,7 +311,16 @@ otokenReadList[stream_, spec_, n_]:=
 
 
 tokenReadList[stream_, spec_, n_, t_]:=
-  tokenStreamer[stream, spec, t][n]
+  TokenStreamer[stream, spec, t]@"Read"[n];
+
+
+(* ::Subsubsubsection::Closed:: *)
+(*tokenPeekList*)
+
+
+
+tokenPeekList[stream_, spec_, n_, t_]:=
+  TokenStreamer[stream, spec, t]@"Peek"[n];
 
 
 (* ::Subsubsection::Closed:: *)
@@ -330,12 +362,23 @@ prepTokenHandlers[tokens_]:=
 
 TokenRead[t_TokenStream, n:_Integer?Positive:1]:=
   Module[{stream=t["Stream"], spec=prepTokenHandlers@t["Tokens"]},
-    WithTokenizerCheckpoint[
-      stream,
-      If[n>1, 
+    If[n>1, 
         tokenReadList[stream, spec, n, t],
         tokenRead[stream, spec, t]
         ]
+    ];
+
+
+(* ::Subsubsubsection::Closed:: *)
+(*TokenRead*)
+
+
+
+TokenPeek[t_TokenStream, n:_Integer?Positive:1]:=
+  Module[{stream=t["Stream"], spec=prepTokenHandlers@t["Tokens"]},
+    If[n>1, 
+      tokenPeekList[stream, spec, n, t],
+      tokenPeek[stream, spec, t]
       ]
     ];
 

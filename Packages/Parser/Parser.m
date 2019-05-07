@@ -240,23 +240,13 @@ closeNode[spec_, next_, node_, e_]:=
 
 stack[]:=
   With[{s=Unique[stackVar]}, 
-    s = <||>;
-    s["Pointer"]=1;
-    s["Stack"]=ConstantArray[None, 50];
+    s = {};
     stack[s]
     ];
 stack[s_]@"Push"[val_]:=
-  If[s["Pointer"]==Length@s["Stack"],
-    s@"Allocate"[Length@s["Stack"]*2];
-    stack[s]@"Push"[val],
-    s[["Stack", s["Pointer"]++ ]]=val;
-    ];
+  (AppendTo[s, val];s[[-1]]);
 stack[s_]@"Pop"[]:=
-  If[s["Pointer"]==1,
-    $Failed,
-    (s[["Stack", s["Pointer"] ]]=None;#)&@
-      s[["Stack", --s["Pointer"] ]]
-    ];
+  AppendTo[s, val];s[[-1]]
 stack~SetAttributes~HoldFirst;
 
 
@@ -311,12 +301,18 @@ manageResponse~SetAttributes~HoldFirst;
 
 
 parseExpression[{state_, stack_}, handlers_, toks_]:=
-  Module[{next, handler, resp},
-    next = toks@"Read"[];
+  Module[{next, handler, resp, op},
+    next = toks@"Peek"[];
     handler = Lookup[handlers, next["Token"]];
     While[continueParse[handler, next],
-      resp = handleToken[handler, next, state];
-      manageResponse[{state, stack}, resp, toks];
+      If[handler["Arity"]==2&&handler["Precedence"]>0,
+        While[descendPrecedence[],
+          op = next;
+          toks@"Skip"[];
+          ],
+        resp = handleToken[handler, next, state];
+        manageResponse[{state, stack}, resp, toks];
+        ];
       next = toks@"Read"[];
       handler = Lookup[handlers, next["Token"]];
       ]

@@ -96,7 +96,7 @@ Notebook[{Cell[CellGroupData[{Cell["\[LeftCeiling]Tokens\[RightFloor]",
                         ";", "\n", "    ", "expr"}]}], "\n", "    ", "]"}]}], 
                 ";"}], "\n", RowBox[{RowBox[{"WithTokenizerCheckpoint", "~", 
                   "SetAttributes", "~", "HoldRest"}], ";"}]}], "CodeInput"]}, 
-          Closed]], Cell[CellGroupData[
+          Open]], Cell[CellGroupData[
           {Cell["\[LeftCeiling]readStringToken\[RightFloor]", 
             "CodeSubsubsection", Evaluatable -> True], 
            Cell[BoxData[RowBox[{RowBox[{RowBox[{"readStringToken", "[", 
@@ -164,13 +164,14 @@ convenient\n\[RightFloor]", "Text", Evaluatable -> True],
                         "\n", "    ", RowBox[{"tokenPuller", "[", RowBox[
                           {"spec", "[", "\"Characters\"", "]"}], "]"}]}], 
                       "\n", "    ", "}"}], "]"}]}], ";"}], "\n", 
-              RowBox[{RowBox[{RowBox[{"TokenStreamer", "[", RowBox[
-                     {"{", RowBox[{"t_", ",", " ", "stream_", ",", " ", 
-                        "handlers_", ",", " ", "seps_", ",", " ", 
-                        "tokPuller_"}], "}"}], "]"}], "[", "n_", "]"}], ":=", 
-                "\n", "  ", RowBox[{"Module", "[", RowBox[{RowBox[{"{", 
-                      RowBox[{"body", ",", " ", "token"}], "}"}], ",", "\n", 
-                    "    ", RowBox[{"Table", "[", "\n", "      ", RowBox[
+              RowBox[{RowBox[{"TokenStreamerRead", "[", RowBox[
+                   {RowBox[{"TokenStreamer", "[", RowBox[{"{", RowBox[
+                         {"t_", ",", " ", "stream_", ",", " ", "handlers_", 
+                          ",", " ", "seps_", ",", " ", "tokPuller_"}], "}"}], 
+                      "]"}], ",", " ", "n_"}], "]"}], ":=", "\n", "  ", 
+                RowBox[{"Module", "[", RowBox[{RowBox[{"{", RowBox[{"body", 
+                        ",", " ", "token"}], "}"}], ",", "\n", "    ", 
+                    RowBox[{"Table", "[", "\n", "      ", RowBox[
                        {RowBox[{RowBox[{"body", " ", "=", " ", "\n", 
                           "        ", RowBox[{"Read", "[", RowBox[{"stream", 
                           ",", " ", "Record", ",", "\n", "  ", "        ", 
@@ -192,10 +193,52 @@ convenient\n\[RightFloor]", "Text", Evaluatable -> True],
                           "        ", "token"}], "\n", "          ", 
                           "]"}]}]}], "\n", "        ", "]"}]}], ",", "\n", 
                         "      ", "n"}], "\n", "      ", "]"}]}], "\n", 
-                  "    ", "]"}]}]}], "CodeInput"]}, Closed]], 
-        Cell[CellGroupData[{Cell["\[LeftCeiling]tokenRead\[RightFloor]", 
-            "CodeSubsubsection", Evaluatable -> True], 
-           Cell[CellGroupData[{Cell["\[LeftCeiling]tokenPuller\[RightFloor]", 
+                  "    ", "]"}]}], "\n", RowBox[{RowBox[
+                 {RowBox[{RowBox[{"(", RowBox[{"tks", ":", RowBox[
+                         {"TokenStreamer", "[", RowBox[{"{", RowBox[{"t_", 
+                          ",", " ", "stream_", ",", " ", "handlers_", ",", 
+                          " ", "seps_", ",", " ", "tokPuller_"}], "}"}], 
+                          "]"}]}], ")"}], "@", RowBox[{"\"Read\"", "[", "n_", 
+                      "]"}]}], ":=", "\n", "  ", RowBox[
+                   {"WithTokenizerCheckpoint", "[", "\n", "    ", RowBox[
+                     {"stream", ",", "\n", "    ", RowBox[
+                       {"TokenStreamerRead", "[", RowBox[{"tks", ",", " ", 
+                          "n"}], "]"}]}], "\n", "    ", "]"}]}], ";"}], "\n", 
+              RowBox[{" ", RowBox[{RowBox[{RowBox[{RowBox[{"(", RowBox[
+                         {"tks", ":", RowBox[{"TokenStreamer", "[", RowBox[
+                          {"{", RowBox[{"t_", ",", " ", "stream_", ",", " ", 
+                          "handlers_", ",", " ", "seps_", ",", " ", 
+                          "tokPuller_"}], "}"}], "]"}]}], ")"}], "@", 
+                      RowBox[{"\"Read\"", "[", "]"}]}], ":=", "\n", "   ", 
+                    RowBox[{RowBox[{"(", RowBox[{"tks", "@", RowBox[
+                          {"\"Read\"", "[", "1", "]"}]}], ")"}], "[", 
+                      RowBox[{"[", "1", "]"}], "]"}]}], ";"}]}], "\n", 
+              RowBox[{" ", RowBox[{RowBox[{RowBox[{RowBox[{"(", RowBox[
+                         {"tks", ":", RowBox[{"TokenStreamer", "[", RowBox[
+                          {"{", RowBox[{"t_", ",", " ", "stream_", ",", " ", 
+                          "handlers_", ",", " ", "seps_", ",", " ", 
+                          "tokPuller_"}], "}"}], "]"}]}], ")"}], "@", 
+                      RowBox[{"\"Peek\"", "[", "n_", "]"}]}], ":=", "\n", 
+                    "   ", RowBox[{"WithTokenizerCheckpoint", "[", "\n", 
+                      "     ", RowBox[{"stream", ",", "\n", "     ", 
+                        RowBox[{RowBox[{RowBox[{"(", RowBox[{RowBox[
+                          {"ResetTokenizerCheckpoint", "[", "stream", "]"}], 
+                          ";", " ", "#"}], ")"}], "&"}], "@", RowBox[
+                          {"TokenStreamerRead", "[", RowBox[{"tks", ",", " ", 
+                          "n"}], "]"}]}]}], "\n", "     ", "]"}]}], ";"}]}], 
+              "\n", RowBox[{"  ", RowBox[{RowBox[{RowBox[{RowBox[{"(", 
+                        RowBox[{"tks", ":", RowBox[{"TokenStreamer", "[", 
+                          RowBox[{"{", RowBox[{"t_", ",", " ", "stream_", 
+                          ",", " ", "handlers_", ",", " ", "seps_", ",", " ", 
+                          "tokPuller_"}], "}"}], "]"}]}], ")"}], "@", 
+                      RowBox[{"\"Peek\"", "[", "]"}]}], ":=", "\n", "   ", 
+                    RowBox[{RowBox[{"(", RowBox[{"tks", "@", RowBox[
+                          {"\"Peek\"", "[", "1", "]"}]}], ")"}], "[", 
+                      RowBox[{"[", "1", "]"}], "]"}]}], ";"}]}]}], 
+            "CodeInput"]}, Open]], Cell[CellGroupData[
+          {Cell["\[LeftCeiling]tokenRead\[RightFloor]", "CodeSubsubsection", 
+            Evaluatable -> True], Cell[CellGroupData[
+             {Cell["\[LeftCeiling]tokenPuller\[RightFloor]", 
                "CodeSubsubsubsection", Evaluatable -> True], Cell[BoxData[
                 {RowBox[{RowBox[{RowBox[{"tokenPuller", "[", "tokens_", 
                        "]"}], ":=", "\n", "  ", RowBox[{"tokenPuller", "[", 
@@ -242,11 +285,18 @@ convenient\n\[RightFloor]", "Text", Evaluatable -> True],
                "CodeSubsubsubsection", Evaluatable -> True], Cell[BoxData[
                 RowBox[{RowBox[{RowBox[{"tokenRead", "[", RowBox[{"stream_", 
                         ",", " ", "spec_", ",", " ", "t_"}], "]"}], ":=", 
-                    "\n", "  ", RowBox[{RowBox[{RowBox[{"tokenStreamer", "[", 
-                          RowBox[{"stream", ",", " ", "spec", ",", " ", 
-                          "t"}], "]"}], "[", "1", "]"}], "[", RowBox[
-                       {"[", "1", "]"}], "]"}]}], ";"}]], "CodeInput"]}, 
-             Open]], Cell[CellGroupData[
+                    "\n", "  ", RowBox[{RowBox[{"TokenStreamer", "[", 
+                        RowBox[{"stream", ",", " ", "spec", ",", " ", "t"}], 
+                        "]"}], "@", RowBox[{"\"Read\"", "[", "]"}]}]}], 
+                  ";"}]], "CodeInput"]}, Open]], Cell[CellGroupData[
+             {Cell["\[LeftCeiling]tokenPeek\[RightFloor]", 
+               "CodeSubsubsubsection", Evaluatable -> True], Cell[BoxData[
+                RowBox[{RowBox[{RowBox[{"tokenRead", "[", RowBox[{"stream_", 
+                        ",", " ", "spec_", ",", " ", "t_"}], "]"}], ":=", 
+                    "\n", "  ", RowBox[{RowBox[{"TokenStreamer", "[", 
+                        RowBox[{"stream", ",", " ", "spec", ",", " ", "t"}], 
+                        "]"}], "@", RowBox[{"\"Peek\"", "[", "]"}]}]}], 
+                  ";"}]], "CodeInput"]}, Open]], Cell[CellGroupData[
              {Cell["\[LeftCeiling]tokenReadList\[RightFloor]", 
                "CodeSubsubsubsection", Evaluatable -> True], 
               Cell[CellGroupData[{Cell["\[LeftCeiling]old\[RightFloor]", 
@@ -324,12 +374,23 @@ work as the Handler gets applied too late...\n\[RightFloor]", "Text",
                   "CodeInput"]}, Closed]], Cell[CellGroupData[
                 {Cell["\[LeftCeiling]new\[RightFloor]", 
                   "CodeSubsubsubsubsection", Evaluatable -> True], 
-                 Cell[BoxData[RowBox[{RowBox[{"tokenReadList", "[", RowBox[
-                        {"stream_", ",", " ", "spec_", ",", " ", "n_", ",", 
-                         " ", "t_"}], "]"}], ":=", "\n", "  ", RowBox[
-                      {RowBox[{"tokenStreamer", "[", RowBox[{"stream", ",", 
-                          " ", "spec", ",", " ", "t"}], "]"}], "[", "n", 
-                       "]"}]}]], "CodeInput"]}, Open]]}, Open]]}, Open]], 
+                 Cell[BoxData[RowBox[{RowBox[{RowBox[{"tokenReadList", "[", 
+                         RowBox[{"stream_", ",", " ", "spec_", ",", " ", 
+                          "n_", ",", " ", "t_"}], "]"}], ":=", "\n", "  ", 
+                       RowBox[{RowBox[{"TokenStreamer", "[", RowBox[
+                          {"stream", ",", " ", "spec", ",", " ", "t"}], 
+                          "]"}], "@", RowBox[{"\"Read\"", "[", "n", 
+                          "]"}]}]}], ";"}]], "CodeInput"]}, Open]]}, Open]], 
+           Cell[CellGroupData[
+             {Cell["\[LeftCeiling]tokenPeekList\[RightFloor]", 
+               "CodeSubsubsubsection", Evaluatable -> True], Cell[BoxData[
+                RowBox[{RowBox[{RowBox[{"tokenPeekList", "[", RowBox[
+                       {"stream_", ",", " ", "spec_", ",", " ", "n_", ",", 
+                        " ", "t_"}], "]"}], ":=", "\n", "  ", RowBox[
+                     {RowBox[{"TokenStreamer", "[", RowBox[{"stream", ",", 
+                          " ", "spec", ",", " ", "t"}], "]"}], "@", 
+                      RowBox[{"\"Peek\"", "[", "n", "]"}]}]}], ";"}]], 
+               "CodeInput"]}, Open]]}, Open]], 
         Cell[CellGroupData[{Cell["\[LeftCeiling]TokenRead\[RightFloor]", 
             "CodeSubsubsection", Evaluatable -> True], 
            Cell[CellGroupData[
@@ -370,19 +431,36 @@ work as the Handler gets applied too late...\n\[RightFloor]", "Text",
                           RowBox[{"t", "[", "\"Stream\"", "]"}]}], ",", " ", 
                           RowBox[{"spec", "=", RowBox[{"prepTokenHandlers", 
                           "@", RowBox[{"t", "[", "\"Tokens\"", "]"}]}]}]}], 
-                          "}"}], ",", "\n", "    ", RowBox[
-                         {"WithTokenizerCheckpoint", "[", "\n", "      ", 
-                          RowBox[{"stream", ",", "\n", "      ", RowBox[
-                          {"If", "[", RowBox[{RowBox[{"n", ">", "1"}], ",", 
-                          " ", "\n", "        ", RowBox[{"tokenReadList", 
-                          "[", RowBox[{"stream", ",", " ", "spec", ",", " ", 
-                          "n", ",", " ", "t"}], "]"}], ",", "\n", "        ", 
-                          RowBox[{"tokenRead", "[", RowBox[{"stream", ",", 
-                          " ", "spec", ",", " ", "t"}], "]"}]}], "\n", 
-                          "        ", "]"}]}], "\n", "      ", "]"}]}], "\n", 
-                      "    ", "]"}]}], ";"}]], "CodeInput"]}, Open]]}, 
-          Open]]}, Open]], Cell[BoxData[RowBox[{RowBox[{"End", "[", "]"}], 
-         ";"}]], "InputSection"]}, Open]], Cell["", "SectionSeparator"]}, 
+                          "}"}], ",", "\n", "    ", RowBox[{"If", "[", 
+                          RowBox[{RowBox[{"n", ">", "1"}], ",", " ", "\n", 
+                          "        ", RowBox[{"tokenReadList", "[", RowBox[
+                          {"stream", ",", " ", "spec", ",", " ", "n", ",", 
+                          " ", "t"}], "]"}], ",", "\n", "        ", RowBox[
+                          {"tokenRead", "[", RowBox[{"stream", ",", " ", 
+                          "spec", ",", " ", "t"}], "]"}]}], "\n", "        ", 
+                          "]"}]}], "\n", "    ", "]"}]}], ";"}]], 
+               "CodeInput"]}, Open]], Cell[CellGroupData[
+             {Cell["\[LeftCeiling]TokenRead\[RightFloor]", 
+               "CodeSubsubsubsection", Evaluatable -> True], Cell[BoxData[
+                RowBox[{RowBox[{RowBox[{"TokenPeek", "[", RowBox[
+                       {"t_TokenStream", ",", " ", RowBox[{"n", ":", RowBox[
+                          {"_Integer", "?", "Positive"}], ":", "1"}]}], 
+                      "]"}], ":=", "\n", "  ", RowBox[{"Module", "[", 
+                      RowBox[{RowBox[{"{", RowBox[{RowBox[{"stream", "=", 
+                          RowBox[{"t", "[", "\"Stream\"", "]"}]}], ",", " ", 
+                          RowBox[{"spec", "=", RowBox[{"prepTokenHandlers", 
+                          "@", RowBox[{"t", "[", "\"Tokens\"", "]"}]}]}]}], 
+                          "}"}], ",", "\n", "    ", RowBox[{"If", "[", 
+                          RowBox[{RowBox[{"n", ">", "1"}], ",", " ", "\n", 
+                          "      ", RowBox[{"tokenPeekList", "[", RowBox[
+                          {"stream", ",", " ", "spec", ",", " ", "n", ",", 
+                          " ", "t"}], "]"}], ",", "\n", "      ", RowBox[
+                          {"tokenPeek", "[", RowBox[{"stream", ",", " ", 
+                          "spec", ",", " ", "t"}], "]"}]}], "\n", "      ", 
+                          "]"}]}], "\n", "    ", "]"}]}], ";"}]], 
+               "CodeInput"]}, Open]]}, Open]]}, Open]], 
+     Cell[BoxData[RowBox[{RowBox[{"End", "[", "]"}], ";"}]], 
+      "InputSection"]}, Open]], Cell["", "SectionSeparator"]}, 
  FrontEndVersion -> "12.0 for Mac OS X x86 (64-bit) (April 8, 2019)", 
  StyleDefinitions -> FrontEnd`FileName[{"BTools"}, "CodePackage.nb", 
    CharacterEncoding -> "UTF-8"]]

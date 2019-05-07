@@ -239,44 +239,20 @@ patterns are defined...\n\[RightFloor]", "Text", Evaluatable -> True],
                      "  ", RowBox[{"With", "[", RowBox[{RowBox[{"{", RowBox[
                           {"s", "=", RowBox[{"Unique", "[", "stackVar", 
                           "]"}]}], "}"}], ",", " ", "\n", "    ", RowBox[
-                          {RowBox[{"s", " ", "=", " ", RowBox[{"<|", 
-                          "|>"}]}], ";", "\n", "    ", RowBox[{RowBox[{"s", 
-                          "[", "\"Pointer\"", "]"}], "=", "1"}], ";", "\n", 
-                          "    ", RowBox[{RowBox[{"s", "[", "\"Stack\"", 
-                          "]"}], "=", RowBox[{"ConstantArray", "[", RowBox[
-                          {"None", ",", " ", "50"}], "]"}]}], ";", "\n", 
-                          "    ", RowBox[{"stack", "[", "s", "]"}]}]}], "\n", 
-                       "    ", "]"}]}], ";"}], "\n", RowBox[
-                  {RowBox[{RowBox[{RowBox[{"stack", "[", "s_", "]"}], "@", 
-                       RowBox[{"\"Push\"", "[", "val_", "]"}]}], ":=", "\n", 
-                     "  ", RowBox[{"If", "[", RowBox[{RowBox[{RowBox[{"s", 
-                          "[", "\"Pointer\"", "]"}], "\[Equal]", RowBox[
-                          {"Length", "@", RowBox[{"s", "[", "\"Stack\"", 
-                          "]"}]}]}], ",", "\n", "    ", RowBox[{RowBox[
-                          {"s", "@", RowBox[{"\"Allocate\"", "[", RowBox[
-                          {RowBox[{"Length", "@", RowBox[{"s", "[", 
-                          "\"Stack\"", "]"}]}], "*", "2"}], "]"}]}], ";", 
-                          "\n", "    ", RowBox[{RowBox[{"stack", "[", "s", 
-                          "]"}], "@", RowBox[{"\"Push\"", "[", "val", 
-                          "]"}]}]}], ",", "\n", "    ", RowBox[{RowBox[
-                          {RowBox[{"s", "[", RowBox[{"[", RowBox[
-                          {"\"Stack\"", ",", " ", RowBox[{RowBox[{"s", "[", 
-                          "\"Pointer\"", "]"}], "++"}]}], " ", "]"}], "]"}], 
-                          "=", "val"}], ";"}]}], "\n", "    ", "]"}]}], 
-                   ";"}], "\n", RowBox[{RowBox[{RowBox[{RowBox[{"stack", "[", 
-                         "s_", "]"}], "@", RowBox[{"\"Pop\"", "[", "]"}]}], 
-                     ":=", "\n", "  ", RowBox[{"If", "[", RowBox[
-                        {RowBox[{RowBox[{"s", "[", "\"Pointer\"", "]"}], 
-                          "\[Equal]", "1"}], ",", "\n", "    ", "$Failed", 
-                         ",", "\n", "    ", RowBox[{RowBox[{RowBox[{"(", 
-                          RowBox[{RowBox[{RowBox[{"s", "[", RowBox[{"[", 
-                          RowBox[{"\"Stack\"", ",", " ", RowBox[{"s", "[", 
-                          "\"Pointer\"", "]"}]}], " ", "]"}], "]"}], "=", 
-                          "None"}], ";", "#"}], ")"}], "&"}], "@", "\n", 
-                          "      ", RowBox[{"s", "[", RowBox[{"[", RowBox[
-                          {"\"Stack\"", ",", " ", RowBox[{"--", RowBox[{"s", 
-                          "[", "\"Pointer\"", "]"}]}]}], " ", "]"}], 
+                          {RowBox[{"s", " ", "=", " ", RowBox[{"{", "}"}]}], 
+                          ";", "\n", "    ", RowBox[{"stack", "[", "s", 
                           "]"}]}]}], "\n", "    ", "]"}]}], ";"}], "\n", 
+                 RowBox[{RowBox[{RowBox[{RowBox[{"stack", "[", "s_", "]"}], 
+                       "@", RowBox[{"\"Push\"", "[", "val_", "]"}]}], ":=", 
+                     "\n", "  ", RowBox[{"(", RowBox[{RowBox[{"AppendTo", 
+                          "[", RowBox[{"s", ",", " ", "val"}], "]"}], ";", 
+                         RowBox[{"s", "[", RowBox[{"[", RowBox[{"-", "1"}], 
+                          "]"}], "]"}]}], ")"}]}], ";"}], "\n", 
+                 RowBox[{RowBox[{RowBox[{RowBox[{"stack", "[", "s_", "]"}], 
+                       "@", RowBox[{"\"Pop\"", "[", "]"}]}], ":=", "\n", 
+                     "  ", RowBox[{"AppendTo", "[", RowBox[{"s", ",", " ", 
+                         "val"}], "]"}]}], ";", RowBox[{"s", "[", RowBox[
+                      {"[", RowBox[{"-", "1"}], "]"}], "]"}]}], "\n", 
                  RowBox[{RowBox[{"stack", "~", "SetAttributes", "~", 
                      "HoldFirst"}], ";"}]}], "CodeInput"]}, Open]], 
            Cell[CellGroupData[
@@ -342,25 +318,36 @@ object can be returned.\n\[RightFloor]", "Text", Evaluatable -> True],
                           "stack_"}], "}"}], ",", " ", "handlers_", ",", " ", 
                          "toks_"}], "]"}], ":=", "\n", "  ", RowBox[
                       {"Module", "[", RowBox[{RowBox[{"{", RowBox[{"next", 
-                          ",", " ", "handler", ",", " ", "resp"}], "}"}], 
-                         ",", "\n", "    ", RowBox[{RowBox[{"next", " ", "=", 
-                          " ", RowBox[{"toks", "@", RowBox[{"\"Read\"", "[", 
-                          "]"}]}]}], ";", "\n", "    ", RowBox[{"handler", 
-                          " ", "=", " ", RowBox[{"Lookup", "[", RowBox[
-                          {"handlers", ",", " ", RowBox[{"next", "[", 
-                          "\"Token\"", "]"}]}], "]"}]}], ";", "\n", "    ", 
-                          RowBox[{"While", "[", RowBox[{RowBox[
-                          {"continueParse", "[", RowBox[{"handler", ",", " ", 
-                          "next"}], "]"}], ",", "\n", "  ", "    ", RowBox[
-                          {RowBox[{"resp", " ", "=", " ", RowBox[
-                          {"handleToken", "[", RowBox[{"handler", ",", " ", 
-                          "next", ",", " ", "state"}], "]"}]}], ";", "\n", 
-                          "      ", RowBox[{"manageResponse", "[", RowBox[
-                          {RowBox[{"{", RowBox[{"state", ",", " ", "stack"}], 
-                          "}"}], ",", " ", "resp", ",", " ", "toks"}], "]"}], 
-                          ";", "\n", "  ", "  ", "  ", RowBox[{"next", " ", 
-                          "=", " ", RowBox[{"toks", "@", RowBox[{"\"Read\"", 
-                          "[", "]"}]}]}], ";", "\n", "  ", "  ", "  ", RowBox[
+                          ",", " ", "handler", ",", " ", "resp", ",", " ", 
+                          "op"}], "}"}], ",", "\n", "    ", RowBox[
+                          {RowBox[{"next", " ", "=", " ", RowBox[{"toks", 
+                          "@", RowBox[{"\"Peek\"", "[", "]"}]}]}], ";", "\n", 
+                          "    ", RowBox[{"handler", " ", "=", " ", RowBox[
+                          {"Lookup", "[", RowBox[{"handlers", ",", " ", 
+                          RowBox[{"next", "[", "\"Token\"", "]"}]}], "]"}]}], 
+                          ";", "\n", "    ", RowBox[{"While", "[", RowBox[
+                          {RowBox[{"continueParse", "[", RowBox[{"handler", 
+                          ",", " ", "next"}], "]"}], ",", "\n", "      ", 
+                          RowBox[{RowBox[{"If", "[", RowBox[{RowBox[{RowBox[
+                          {RowBox[{"handler", "[", "\"Arity\"", "]"}], 
+                          "\[Equal]", "2"}], "&&", RowBox[{RowBox[{"handler", 
+                          "[", "\"Precedence\"", "]"}], ">", "0"}]}], ",", 
+                          "\n", "  ", "      ", RowBox[{"While", "[", RowBox[
+                          {RowBox[{"descendPrecedence", "[", "]"}], ",", 
+                          "\n", "  ", "        ", RowBox[{RowBox[{"op", " ", 
+                          "=", " ", "next"}], ";", "\n", "          ", RowBox[
+                          {"toks", "@", RowBox[{"\"Skip\"", "[", "]"}]}], 
+                          ";"}]}], "\n", "          ", "]"}], ",", "\n", 
+                          "        ", RowBox[{RowBox[{"resp", " ", "=", " ", 
+                          RowBox[{"handleToken", "[", RowBox[{"handler", ",", 
+                          " ", "next", ",", " ", "state"}], "]"}]}], ";", 
+                          "\n", "  ", "      ", RowBox[{"manageResponse", 
+                          "[", RowBox[{RowBox[{"{", RowBox[{"state", ",", 
+                          " ", "stack"}], "}"}], ",", " ", "resp", ",", " ", 
+                          "toks"}], "]"}], ";"}]}], "\n", "        ", "]"}], 
+                          ";", "\n", "      ", RowBox[{"next", " ", "=", " ", 
+                          RowBox[{"toks", "@", RowBox[{"\"Read\"", "[", 
+                          "]"}]}]}], ";", "\n", "  ", "  ", "  ", RowBox[
                           {"handler", " ", "=", " ", RowBox[{"Lookup", "[", 
                           RowBox[{"handlers", ",", " ", RowBox[{"next", "[", 
                           "\"Token\"", "]"}]}], "]"}]}], ";"}]}], "\n", 
