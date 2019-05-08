@@ -79,22 +79,70 @@ InterfaceMethod[TokenStream]@
 (* ::Text:: *)
 (*
 	Might be better to do with Language`ExpressionStore ?
+	We\[CloseCurlyQuote]re gonna manage this under the assumption that if you peek ahead and then reset you want to be able to jump back to where you were post peek...?
 *)
 
 
 
 If[!AssociationQ[$checkpoints], $checkpoints=<||>];
+If[!AssociationQ[$peekpoints], $peekpoints=<||>];
 
 
-SetTokenizerCheckpoint[stream_]:=
-  $checkpoints[stream] = StreamPosition[stream];
-ResetTokenizerCheckpoint[stream_]:=
-  SetStreamPosition[stream, $checkpoints[stream]];
-WithTokenizerCheckpoint[stream_, expr_]:=
-  Block[{$checkpoints = If[!AssociationQ[$checkpoints], <||>, $checkpoints]},
+SetTokenizerCheckpoint[stream_InputStream, dir:"Forward"|"Backward":"Backward"]:=
+  If[dir==="Backward",
+    $checkpoints[stream] = StreamPosition[stream],
+    $peekpoints[stream] = StreamPosition[stream]
+    ];
+SetTokenizerCheckpoint[
+  TokenStreamer[{t_, stream_, handlers_, seps_, tokPuller_}], 
+  dir:"Forward"|"Backward":"Backward"
+  ]:=
+  SetTokenizerCheckpoint[stream, dir];
+SetTokenizerCheckpoint[
+  t_TokenStream, 
+  dir:"Forward"|"Backward":"Backward"
+  ]:=
+  SetTokenizerCheckpoint[t["Stream"], dir];
+
+
+ResetTokenizerCheckpoint[stream_InputStream, dir:"Forward"|"Backward":"Backward"]:=
+  SetStreamPosition[stream, 
+    If[dir==="Backward",
+      $checkpoints,
+      $peekpoints
+      ][stream]
+    ];
+ResetTokenizerCheckpoint[
+  TokenStreamer[{t_, stream_, handlers_, seps_, tokPuller_}], 
+  dir:"Forward"|"Backward":"Backward"
+  ]:=
+  ResetTokenizerCheckpoint[stream, dir];
+ResetTokenizerCheckpoint[
+  t_TokenStream, 
+  dir:"Forward"|"Backward":"Backward"
+  ]:=
+  ResetTokenizerCheckpoint[t["Stream"], dir];
+
+
+WithTokenizerCheckpoint[stream_InputStream, expr_]:=
+  Block[
+    {
+      $checkpoints = If[!AssociationQ[$checkpoints], <||>, $checkpoints],
+      $peekpoints = If[!AssociationQ[$peekpoints], <||>, $peekpoints]
+      },
     SetTokenizerCheckpoint[stream];
     expr
     ];
+WithTokenizerCheckpoint[
+  TokenStreamer[{t_, stream_, handlers_, seps_, tokPuller_}], 
+  expr_
+  ]:=
+  WithTokenizerCheckpoint[stream, expr];
+WithTokenizerCheckpoint[
+  t_TokenStream, 
+  expr_
+  ]:=
+  WithTokenizerCheckpoint[t["Stream"], expr];
 WithTokenizerCheckpoint~SetAttributes~HoldRest;
 
 
@@ -141,7 +189,7 @@ readLookAhead[lookAheadDispatcher_, tokenPuller_][stream_, body_, token_]:=
 
 
 
-TokenStreamer[t_]:=
+TokenStreamer[t_TokenStream]:=
   Module[{stream=t["Stream"], spec=prepTokenHandlers@t["Tokens"]},
     TokenStreamer[stream, spec, t]
     ];
@@ -153,42 +201,87 @@ TokenStreamer[stream_, spec_, t_]:=
     spec["Characters"],
     tokenPuller[spec["Characters"]]
     }];
+
+
 TokenStreamerRead[TokenStreamer[{t_, stream_, handlers_, seps_, tokPuller_}], n_]:=
-  Module[{body, token},
+  Module[{body, tmp, token, spos},
     Table[
-      body = 
-        Read[stream, Record,
-          RecordSeparators->seps
-          ];
-      If[body===EndOfFile, 
-        handlers[EndOfFile][
-          t,
-          EndOfFile,
-          EndOfFile
-          ],
-        token = tokPuller[stream];
-        handlers[token][
-          t,
-          body,
-          token
+      token = $Failed;
+      body = EndOfFile;
+      While[token===$Failed,
+        If[StreamPosition[stream]==0,
+          (* 
+                      we need a secondary handling mechanism to ensure
+                        that we don't miss tokens at the very start of the stream
+                      *)
+          tmp = 
+           Read[stream, Record,
+              RecordSeparators->seps
+              ];
+          spos = StreamPosition[stream];
+          If[StringLength@tmp<spos (* we skipped a thing *),
+            SetStreamPosition[stream, 0];
+            token = tokPuller[stream];
+            If[ListQ@token, 
+              body = token[[2]];
+              token = token[[1]],
+              body = "";
+              ]
+            ],
+          (* standard mechanism a little bit simpler *)
+          tmp = 
+           Read[stream, Record,
+              RecordSeparators->seps
+              ];
+          If[tmp===EndOfFile, 
+            Return[
+              handlers[EndOfFile][
+                t,
+                If[StringQ@body, body, EndOfFile],
+                EndOfFile
+                ],
+              While
+              ],
+            token = tokPuller[stream];
+            If[ListQ@token, 
+              tmp = tmp <> token[[2]];
+              token = token[[1]];
+              ]
+            ];
+          body = If[StringQ@body, body<>tmp, tmp]
           ]
+        ];
+      handlers[token][
+        t,
+        body,
+        token
         ],
       n
       ]
     ]
-(tks:TokenStreamer[{t_, stream_, handlers_, seps_, tokPuller_}])@"Read"[n_]:=
+
+
+(
+  tks:HoldPattern[TokenStreamer[{t_, stream_, handlers_, seps_, tokPuller_}]]
+  )@"Read"[n_]:=
   WithTokenizerCheckpoint[
     stream,
     TokenStreamerRead[tks, n]
     ];
- (tks:TokenStreamer[{t_, stream_, handlers_, seps_, tokPuller_}])@"Read"[]:=
+ (
+  tks:HoldPattern[TokenStreamer[{t_, stream_, handlers_, seps_, tokPuller_}]]
+  )@"Read"[]:=
    (tks@"Read"[1])[[1]];
- (tks:TokenStreamer[{t_, stream_, handlers_, seps_, tokPuller_}])@"Peek"[n_]:=
+ (
+  tks:HoldPattern[TokenStreamer[{t_, stream_, handlers_, seps_, tokPuller_}]]
+  )@"Peek"[n_]:=
    WithTokenizerCheckpoint[
      stream,
      (ResetTokenizerCheckpoint[stream]; #)&@TokenStreamerRead[tks, n]
      ];
-  (tks:TokenStreamer[{t_, stream_, handlers_, seps_, tokPuller_}])@"Peek"[]:=
+ (
+  tks:HoldPattern[TokenStreamer[{t_, stream_, handlers_, seps_, tokPuller_}]]
+  )@"Peek"[]:=
    (tks@"Peek"[1])[[1]];
 
 
@@ -202,15 +295,41 @@ TokenStreamerRead[TokenStreamer[{t_, stream_, handlers_, seps_, tokPuller_}], n_
 
 
 
+(* ::Text:: *)
+(*
+	Pulls the real token off the stream. 
+	Has to be a bit careful about things like \[OpenCurlyDoubleQuote]for\[CloseCurlyDoubleQuote] and EOFs.
+*)
+
+
+
+tokenPuller//Clear
 tokenPuller[tokens_]:=
   tokenPuller[
-    AssociationThread[Keys[tokens], None], 
+    AssociationThread[tokens, None], 
     Min[StringLength/@Select[tokens, StringQ]]
     ];
 tokenPuller[tokSet_, min_][stream_]:=
   pullTokenToo[stream, tokSet, min];
+pullTokenToo//Clear
 pullTokenToo[stream_, tokSet_, minTok_]:=
-  Module[{tok=ReadList[stream, Character, minTok], tmp},
+  (* gotta figure out which token we actually got... *)
+  Module[{tok, tmp, spos, spos2},
+    spos = StreamPosition[stream];
+    If[spos>0,
+      tok = Read[stream, Character];
+      spos2 = StreamPosition[stream];
+      If[StringMatchQ[tok, WordCharacter], 
+        SetStreamPosition[stream, spos-1];
+        If[!StringMatchQ[Read[stream, Character], WhitespaceCharacter],
+          SetStreamPosition[stream, spos2];
+          Return[{$Failed, tok}, Module],
+          SetStreamPosition[stream, spos2]
+          ]
+        ]; 
+      tok = Prepend[tok]@ReadList[stream, Character, minTok-1],
+      tok = ReadList[stream, Character, minTok];
+      ];
     If[AllTrue[tok, StringQ],
       tok = StringJoin[tok],
       Return[EndOfFile, Module]
@@ -219,6 +338,17 @@ pullTokenToo[stream_, tokSet_, minTok_]:=
       tmp = Read[stream, Character];
       If[tmp===EndOfFile, Return[EndOfFile, Module]];
       tok = tok<>tmp;
+      ];
+    
+    If[StringMatchQ[StringTake[tok, {1}], WordCharacter],
+       (* finally need to check that next char isn't another WordCharacter *)
+      spos2 = StreamPosition[stream];
+      tmp = Read[stream, Character];
+      If[StringQ@tmp&&StringMatchQ[tmp, WordCharacter],
+        SetStreamPosition[stream, spos];
+        Return[{$Failed, tok}, Module],
+        SetStreamPosition[stream, spos2]
+        ]
       ];
     tok
     ]
@@ -238,7 +368,7 @@ tokenRead[stream_, spec_, t_]:=
 
 
 
-tokenRead[stream_, spec_, t_]:=
+tokenPeek[stream_, spec_, t_]:=
   TokenStreamer[stream, spec, t]@"Peek"[];
 
 

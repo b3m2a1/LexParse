@@ -12,40 +12,76 @@ Notebook[{Cell[CellGroupData[{Cell["Parser", "CodeSection"],
            Cell[CellGroupData[
              {Cell["\[LeftCeiling]normalizeTokenHandler\[RightFloor]", 
                "CodeSubsubsubsection", Evaluatable -> True], Cell[BoxData[
-                RowBox[{RowBox[{"normalizeTokenHandler", "[", RowBox[
-                     {"{", RowBox[{"a_String", ",", " ", "b_String"}], "}"}], 
-                    "]"}], ":=", "\n", "  ", RowBox[{"{", "\n", "    ", 
-                    RowBox[{RowBox[{"Join", "[", "\n", "      ", RowBox[
+                RowBox[{"normalizeTokenHandler", "//", "Clear"}]], 
+               "CodeInput"], Cell[BoxData[RowBox[{RowBox[
+                   {"normalizeTokenHandler", "[", RowBox[{"{", RowBox[
+                       {"a_String", ",", " ", "b_String", ",", " ", RowBox[
+                         {"ops___", "?", "OptionQ"}]}], "}"}], "]"}], ":=", 
+                  "\n", "  ", RowBox[{"{", "\n", "    ", RowBox[
+                     {RowBox[{"Join", "[", "\n", "      ", RowBox[
                          {RowBox[{"normalizeTokenHandler", "[", "a", "]"}], 
                           ",", "\n", "      ", RowBox[{"<|", "\n", 
                           "        ", RowBox[{RowBox[{"\"TokenType\"", 
                           "\[Rule]", "\"BlockOpener\""}], ",", "\n", 
                           "        ", RowBox[{"\"BlockType\"", "\[Rule]", 
                           RowBox[{"{", RowBox[{"\"Delimited\"", ",", " ", 
-                          "a", ",", " ", "b"}], "}"}]}]}], "\n", "        ", 
-                          "|>"}]}], "\n", "      ", "]"}], ",", "\n", "    ", 
-                      RowBox[{"Join", "[", "\n", "      ", RowBox[
-                         {RowBox[{"normalizeTokenHandler", "[", "b", "]"}], 
-                          ",", "\n", "      ", RowBox[{"<|", "\n", 
-                          "        ", RowBox[{"\"TokenType\"", "\[Rule]", 
-                          "\"BlockCloser\""}], "\n", "        ", "|>"}]}], 
+                          RowBox[{"{", RowBox[{"a", ",", " ", "b"}], "}"}]}], 
+                          "}"}]}], ",", "\n", "        ", "ops"}], "\n", 
+                          "        ", "|>"}]}], "\n", "      ", "]"}], ",", 
+                      "\n", "    ", RowBox[{"Join", "[", "\n", "      ", 
+                        RowBox[{RowBox[{"normalizeTokenHandler", "[", "b", 
+                          "]"}], ",", "\n", "      ", RowBox[{"<|", "\n", 
+                          "        ", RowBox[{RowBox[{"\"TokenType\"", 
+                          "\[Rule]", "\"BlockCloser\""}], ",", "\n", 
+                          "        ", "ops"}], "\n", "        ", "|>"}]}], 
                         "\n", "      ", "]"}]}], "\n", "    ", "}"}]}]], 
-               "CodeInput"], Cell[BoxData[RowBox[{RowBox[{RowBox[
-                     {"normalizeTokenHandler", "[", RowBox[{"{", RowBox[
-                         {"a_String", ",", " ", "n_Integer"}], "}"}], "]"}], 
-                    ":=", "\n", "  ", RowBox[{"Join", "[", "\n", "      ", 
-                      RowBox[{RowBox[{"normalizeTokenHandler", "[", "a", 
+               "CodeInput"], Cell[BoxData[{RowBox[{RowBox[{RowBox[
+                      {"normalizeTokenHandler", "[", RowBox[{"{", RowBox[
+                          {"a_String", ",", " ", "n_Integer", ",", " ", 
+                          RowBox[{"ops___", "?", "OptionQ"}]}], "}"}], "]"}], 
+                     ":=", "\n", "  ", RowBox[{"Join", "[", "\n", "      ", 
+                       RowBox[{RowBox[{"normalizeTokenHandler", "[", "a", 
                           "]"}], ",", "\n", "      ", RowBox[{"<|", "\n", 
                           "        ", RowBox[{RowBox[{"\"TokenType\"", 
                           "\[Rule]", "\"BlockOpener\""}], ",", "\n", 
                           "        ", RowBox[{"\"BlockType\"", "\[Rule]", 
                           RowBox[{"{", RowBox[{"\"FixedLength\"", ",", " ", 
-                          "n"}], "}"}]}]}], "\n", "        ", "|>"}]}], "\n", 
-                      "      ", "]"}]}], ";"}]], "CodeInput"], 
-              Cell[BoxData[RowBox[{RowBox[{"normalizeTokenHandler", "[", 
-                    "a_String", "]"}], ":=", "\n", "  ", RowBox[{"<|", "\n", 
-                    "    ", RowBox[{RowBox[{"\"Token\"", "\[Rule]", "a"}], 
-                      ",", "\n", "    ", RowBox[{"\"TokenType\"", "\[Rule]", 
+                          "n"}], "}"}]}], ",", "\n", "        ", "ops"}], 
+                          "\n", "        ", "|>"}]}], "\n", "      ", 
+                       "]"}]}], ";"}], "\n", RowBox[{RowBox[{RowBox[
+                      {"normalizeTokenHandler", "[", RowBox[{"{", RowBox[
+                          {"a_String", ",", " ", "b__String", ",", " ", 
+                          RowBox[{"ops___", "?", "OptionQ"}]}], "}"}], "]"}], 
+                     ":=", "\n", "  ", RowBox[{"Join", "[", "\n", "      ", 
+                       RowBox[{RowBox[{"normalizeTokenHandler", "[", "a", 
+                          "]"}], ",", "\n", "      ", RowBox[{"<|", "\n", 
+                          "        ", RowBox[{RowBox[{"\"TokenType\"", 
+                          "\[Rule]", "\"BlockOpener\""}], ",", "\n", 
+                          "        ", RowBox[{"\"BlockType\"", "\[Rule]", 
+                          RowBox[{"{", RowBox[{"\"Structured\"", ",", " ", 
+                          RowBox[{"{", RowBox[{"a", ",", " ", "b"}], "}"}]}], 
+                          "}"}]}], ",", "\n", "        ", "ops"}], "\n", 
+                          "        ", "|>"}]}], "\n", "      ", "]"}]}], 
+                   ";"}]}], "CodeInput"], Cell[BoxData[RowBox[
+                 {RowBox[{"normalizeTokenHandler", "[", RowBox[{"{", 
+                      RowBox[{RowBox[{"Verbatim", "[", "_", "]"}], ",", " ", 
+                        "op_String", ",", " ", RowBox[{"Verbatim", "[", "_", 
+                          "]"}], ",", " ", RowBox[{"ops___", "?", 
+                          "OptionQ"}]}], "}"}], "]"}], ":=", "\n", "  ", 
+                  RowBox[{"Join", "[", "\n", "      ", RowBox[
+                     {RowBox[{"normalizeTokenHandler", "[", "op", "]"}], ",", 
+                      "\n", "      ", RowBox[{"<|", "\n", "        ", 
+                        RowBox[{RowBox[{"\"TokenType\"", "\[Rule]", 
+                          "\"Operator\""}], ",", "\n", "        ", RowBox[
+                          {"\"BlockType\"", "\[Rule]", "\"Operator\""}], ",", 
+                          "\n", "        ", RowBox[{"\"Precedence\"", 
+                          "\[Rule]", "0"}], ",", "\n", "        ", "ops"}], 
+                        "\n", "        ", "|>"}]}], "\n", "      ", "]"}]}]], 
+               "CodeInput"], Cell[BoxData[RowBox[{RowBox[
+                   {"normalizeTokenHandler", "[", "a_String", "]"}], ":=", 
+                  "\n", "  ", RowBox[{"<|", "\n", "    ", RowBox[
+                     {RowBox[{"\"Token\"", "\[Rule]", "a"}], ",", "\n", 
+                      "    ", RowBox[{"\"TokenType\"", "\[Rule]", 
                         "\"Atomic\""}], ",", "\n", "    ", RowBox[
                        {"\"BlockType\"", "\[Rule]", "\"Infinite\""}], ",", 
                       "\n", "    ", RowBox[{"\"DataFunction\"", "\[Rule]", 
@@ -62,7 +98,13 @@ Notebook[{Cell[CellGroupData[{Cell["Parser", "CodeSection"],
                           "\n", "      ", RowBox[{"\"BlockType\"", "\[Rule]", 
                           "\"Infinite\""}]}], "\n", "      ", "|>"}], ",", 
                         "\n", "    ", "a"}], "\n", "    ", "]"}]}], ";"}]], 
-               "CodeInput"]}, Open]], Cell[CellGroupData[
+               "CodeInput"], Cell[BoxData[RowBox[{RowBox[
+                   {"normalizeTokenHandler", "[", "e_", "]"}], ":=", "\n", 
+                  "  ", RowBox[{"PackageRaiseException", "[", RowBox[
+                     {"Automatic", ",", "\n", "    ", 
+                      "\"Couldn't normalize token handler ``\"", ",", "\n", 
+                      "    ", "e"}], "\n", "    ", "]"}]}]], "CodeInput"]}, 
+             Open]], Cell[CellGroupData[
              {Cell["\[LeftCeiling]normalizeTokenHandlers\[RightFloor]", 
                "CodeSubsubsubsection", Evaluatable -> True], Cell[BoxData[
                 RowBox[{RowBox[{"normalizeTokenHandlers", "[", "list_List", 
@@ -74,7 +116,7 @@ Notebook[{Cell[CellGroupData[{Cell["Parser", "CodeSection"],
                         RowBox[{RowBox[{"Lookup", "[", RowBox[{"normal", ",", 
                           " ", "\"Token\""}], "]"}], ",", "\n", "      ", 
                           "normal"}], "\n", "      ", "]"}]}], "\n", "    ", 
-                    "]"}]}]], "CodeInput"]}, Open]], 
+                    "]"}]}]], "CodeInput"]}, Closed]], 
            Cell[CellGroupData[
              {Cell["\[LeftCeiling]ConstructParserObject\[RightFloor]", 
                "CodeSubsubsubsection", Evaluatable -> True], Cell[BoxData[
@@ -96,7 +138,7 @@ Notebook[{Cell[CellGroupData[{Cell["Parser", "CodeSection"],
                           "[", RowBox[{"Keys", "[", "toks", "]"}], "]"}]}], 
                           ",", "\n", "      ", RowBox[{"\"Handlers\"", 
                           "\[Rule]", "toks"}]}], "\n", "      ", "|>"}]}], 
-                    "\n", "    ", "]"}]}]], "CodeInput"]}, Open]]}, Open]], 
+                    "\n", "    ", "]"}]}]], "CodeInput"]}, Closed]]}, Open]], 
         Cell[CellGroupData[{Cell["\[LeftCeiling]handleToken\[RightFloor]", 
             "CodeSubsubsection", Evaluatable -> True], Cell["\[LeftCeiling]\n\
 If we\[CloseCurlyQuote]ve hit a block opener like {\nthen we want to create a \
@@ -123,41 +165,71 @@ Dot[g, f, g, h]]]. This actually is an issue of Precedence more generally... \
 Can this be resolved in linear time?\n\n\[RightFloor]", "Text", 
             Evaluatable -> True], Cell[BoxData[{RowBox[{"handleToken", "//", 
                 "Clear"}], "\n", RowBox[{RowBox[{"handleToken", "[", 
-                  RowBox[{"spec_", ",", " ", "next_", ",", " ", "node_", ",", 
-                    " ", "blockType_"}], "]"}], ":=", "\n", "  ", 
-                RowBox[{"Replace", "[", RowBox[{RowBox[{"spec", "[", 
-                      "\"TokenType\"", "]"}], ",", "\n", "    ", RowBox[
-                     {"{", "\n", "      ", RowBox[{RowBox[{"\"BlockOpener\"", 
-                          ":>", "\n", "        ", RowBox[{"openNode", "[", 
-                          RowBox[{"spec", ",", " ", "next"}], "]"}]}], ",", 
-                        "\n", "      ", RowBox[{"\"BlockCloser\"", ":>", 
-                          "\n", "        ", RowBox[{"closeNode", "[", RowBox[
-                          {"spec", ",", " ", "next", ",", " ", "node", ",", 
-                          " ", "blockType"}], "]"}]}], ",", "\n", "      ", 
-                        RowBox[{"\"Atomic\"", ":>", "\n", "        ", 
-                          RowBox[{"closeNode", "[", RowBox[{"spec", ",", " ", 
-                          "next", ",", " ", "node", ",", " ", "blockType"}], 
+                  RowBox[{"spec_", ",", " ", "next_", ",", " ", "state_"}], 
+                  "]"}], ":=", "\n", "  ", RowBox[{"Replace", "[", 
+                  RowBox[{RowBox[{"spec", "[", "\"TokenType\"", "]"}], ",", 
+                    "\n", "    ", RowBox[{"{", "\n", "      ", RowBox[
+                       {RowBox[{"\"BlockOpener\"", ":>", "\n", "        ", 
+                          RowBox[{"openNode", "[", RowBox[{"spec", ",", " ", 
+                          "next"}], "]"}]}], ",", "\n", "      ", RowBox[
+                         {"\"BlockCloser\"", ":>", "\n", "        ", RowBox[
+                          {"closeNode", "[", RowBox[{"spec", ",", " ", 
+                          "next", ",", " ", "state"}], "]"}]}], ",", "\n", 
+                        "      ", RowBox[{"\"Atomic\"", ":>", "\n", 
+                          "        ", RowBox[{"closeNode", "[", RowBox[
+                          {"spec", ",", " ", "next", ",", " ", "state"}], 
                           "]"}]}]}], "\n", "      ", "}"}]}], "\n", "    ", 
                   "]"}]}]}], "CodeInput"], Cell[CellGroupData[
              {Cell["\[LeftCeiling]openNode\[RightFloor]", 
                "CodeSubsubsubsection", Evaluatable -> True], Cell[BoxData[
-                RowBox[{RowBox[{"openNode", "[", RowBox[{"spec_", ",", " ", 
-                      "next_"}], "]"}], ":=", "\n", "  ", RowBox[{"<|", "\n", 
-                    "    ", RowBox[{RowBox[{"\"Node\"", "->", "\n", "      ", 
-                        RowBox[{"MakeASTNode", "[", "\n", "        ", 
-                          RowBox[{RowBox[{"If", "[", RowBox[{RowBox[{RowBox[
-                          {"spec", "[", "\"TokenType\"", "]"}], "===", 
-                          "Automatic"}], ",", " ", "Automatic", ",", " ", 
-                          "\"Compound\""}], "]"}], ",", " ", "\n", 
-                          "        ", RowBox[{RowBox[{"spec", "[", 
+                RowBox[{RowBox[{RowBox[{"openNode", "[", RowBox[{"spec_", 
+                        ",", " ", "next_", ",", " ", RowBox[{"prepNode", ":", 
+                          RowBox[{"True", "|", "False"}], ":", "True"}]}], 
+                      "]"}], ":=", "\n", "  ", RowBox[{"<|", "\n", "    ", 
+                      RowBox[{RowBox[{"\"Node\"", "->", "\n", "      ", 
+                          RowBox[{"If", "[", RowBox[{"prepNode", ",", "\n", 
+                          "        ", RowBox[{"MakeASTNode", "[", "\n", 
+                          "          ", RowBox[{RowBox[{"If", "[", RowBox[
+                          {RowBox[{RowBox[{"spec", "[", "\"TokenType\"", 
+                          "]"}], "===", "Automatic"}], ",", " ", "Automatic", 
+                          ",", " ", "\"Compound\""}], "]"}], ",", " ", "\n", 
+                          "  ", "        ", RowBox[{RowBox[{"spec", "[", 
                           "\"DataFunction\"", "]"}], "@", "next"}], ",", 
-                          "\n", "        ", RowBox[{"next", "[", "\"Token\"", 
-                          "]"}]}], "\n", "        ", "]"}]}], ",", "\n", 
-                      "    ", RowBox[{"\"BlockType\"", "->", "\n", "      ", 
-                        RowBox[{"spec", "[", "\"BlockType\"", "]"}]}], ",", 
-                      "\n", "    ", RowBox[{"\"ResponseType\"", "->", "\n", 
-                        "      ", "\"OpenNode\""}]}], "\n", "    ", 
-                    "|>"}]}]], "CodeInput"]}, Open]], 
+                          "\n", "  ", "        ", RowBox[{"next", "[", 
+                          "\"Token\"", "]"}]}], "\n", "          ", "]"}], 
+                          ",", "\n", "        ", "next"}], "\n", "        ", 
+                          "]"}]}], ",", "\n", "    ", RowBox[
+                         {"\"Precedence\"", "\[Rule]", RowBox[{"Lookup", "[", 
+                          RowBox[{"spec", ",", " ", "\"Precedence\"", ",", 
+                          " ", RowBox[{"-", "Infinity"}]}], "]"}]}], ",", 
+                        "\n", "    ", RowBox[{"\"BlockType\"", "->", "\n", 
+                          "      ", RowBox[{"spec", "[", "\"BlockType\"", 
+                          "]"}]}], ",", "\n", "    ", RowBox[
+                         {"\"ResponseType\"", "->", "\n", "      ", 
+                          "\"OpenNode\""}]}], "\n", "    ", "|>"}]}], ";"}]], 
+               "CodeInput"]}, Open]], Cell[CellGroupData[
+             {Cell["\[LeftCeiling]structuredNodeMatchQ\[RightFloor]", 
+               "CodeSubsubsubsection", Evaluatable -> True], Cell[BoxData[
+                RowBox[{RowBox[{"structuredNodeMatchQ", "[", RowBox[
+                     {"nodes_", ",", " ", "blocks_"}], "]"}], ":=", "\n", 
+                  "  ", RowBox[{"Block", "[", RowBox[{RowBox[{"{", "}"}], 
+                      ",", "\n", "    ", RowBox[{RowBox[{"MapThread", "[", 
+                          "\n", "      ", RowBox[{RowBox[{RowBox[{"If", "[", 
+                          RowBox[{RowBox[{RowBox[{"#", "[", "\"Token\"", 
+                          "]"}], "=!=", "#2"}], ",", "\n", "        ", RowBox[
+                          {"PackageRaiseException", "[", RowBox[{"Automatic", 
+                          ",", "\n", "          ", 
+                          "\"Got unexpected token ``\"", ",", " ", "\n", 
+                          "          ", "#2"}], "\n", "          ", "]"}]}], 
+                          "\n", "        ", "]"}], "&"}], ",", "\n", 
+                          "      ", RowBox[{"{", "\n", "        ", RowBox[
+                          {"nodes", ",", "\n", "        ", RowBox[{"blocks", 
+                          "[", RowBox[{"[", RowBox[{";;", RowBox[{"Length", 
+                          "@", "nodes"}]}], "]"}], "]"}]}], "\n", "        ", 
+                          "}"}]}], "\n", "      ", "]"}], ";", "\n", "    ", 
+                        RowBox[{RowBox[{"Length", "@", "blocks"}], 
+                          "\[Equal]", RowBox[{"Length", "@", "nodes"}]}]}]}], 
+                    "\n", "    ", "]"}]}]], "CodeInput"]}, Open]], 
            Cell[CellGroupData[{Cell["\[LeftCeiling]closeNode\[RightFloor]", 
                "CodeSubsubsubsection", Evaluatable -> True], 
               Cell["\[LeftCeiling]\n\tThis is really where all the AST \
@@ -166,24 +238,60 @@ patterns are defined...\n\[RightFloor]", "Text", Evaluatable -> True],
                  RowBox[{RowBox[{RowBox[{"closeNode", "[", RowBox[{"spec_", 
                          ",", " ", "next_", ",", " ", "node_", ",", " ", 
                          RowBox[{"bt", ":", RowBox[{"{", RowBox[
-                          {"\"Delimited\"", ",", " ", "start_", ",", " ", 
-                          "end_"}], "}"}]}]}], "]"}], ":=", "\n", "  ", 
-                     RowBox[{"<|", "\n", "    ", RowBox[{RowBox[{"\"Node\"", 
-                          "->", "\n", "      ", RowBox[{"AddASTNodeData", 
-                          "[", RowBox[{"node", ",", " ", "\n", "        ", 
-                          RowBox[{"MakeASTNode", "[", RowBox[{"\"Atomic\"", 
-                          ",", " ", RowBox[{RowBox[{"spec", "[", 
+                          {"\"Delimited\"", ",", " ", RowBox[{"{", RowBox[
+                          {"start_", ",", " ", "end_"}], "}"}]}], "}"}]}]}], 
+                       "]"}], ":=", "\n", "  ", RowBox[{"<|", "\n", "    ", 
+                       RowBox[{RowBox[{"\"Node\"", "->", "\n", "      ", 
+                          RowBox[{"AddASTNodeData", "[", RowBox[{"node", ",", 
+                          " ", "\n", "        ", RowBox[{"MakeASTNode", "[", 
+                          RowBox[{"\"Atomic\"", ",", " ", RowBox[{RowBox[
+                          {"spec", "[", "\"DataFunction\"", "]"}], "@", 
+                          "next"}], ",", " ", RowBox[{"next", "[", 
+                          "\"Token\"", "]"}]}], "]"}]}], "\n", "        ", 
+                          "]"}]}], ",", "\n", "    ", RowBox[
+                          {"\"BlockType\"", "\[Rule]", "bt"}], ",", "\n", 
+                         "    ", RowBox[{"\"Precedence\"", "\[Rule]", RowBox[
+                          {"Lookup", "[", RowBox[{"spec", ",", " ", 
+                          "\"Precedence\"", ",", " ", RowBox[{"-", 
+                          "Infinity"}]}], "]"}]}], ",", "\n", "    ", 
+                         RowBox[{"\"ResponseType\"", "\[Rule]", "\n", 
+                          "      ", RowBox[{"If", "[", RowBox[{RowBox[
+                          {RowBox[{"spec", "[", "\"Token\"", "]"}], "=!=", 
+                          "end"}], ",", "\n", "        ", "\"EditNode\"", 
+                          ",", "\n", "        ", "\"CloseNode\""}], "\n", 
+                          "        ", "]"}]}]}], "\n", "    ", "|>"}]}], 
+                   ";"}], "\n", RowBox[{RowBox[{RowBox[{"closeNode", "[", 
+                       RowBox[{"spec_", ",", " ", "next_", ",", " ", "node_", 
+                         ",", " ", RowBox[{"bt", ":", RowBox[{"{", RowBox[
+                          {"\"Structured\"", ",", " ", RowBox[{"blocks", ":", 
+                          RowBox[{"{", "__", "}"}]}]}], "}"}]}]}], "]"}], 
+                     ":=", "\n", "  ", RowBox[{"Module", "[", RowBox[
+                        {RowBox[{"{", "main", "}"}], ",", "\n", "  ", "  ", 
+                         RowBox[{RowBox[{"main", "=", "\n", "  ", "    ", 
+                          RowBox[{"AddASTNodeData", "[", RowBox[{"node", ",", 
+                          " ", "\n", "  ", "  ", "    ", RowBox[
+                          {"MakeASTNode", "[", RowBox[{"\"Atomic\"", ",", 
+                          " ", RowBox[{RowBox[{"spec", "[", 
                           "\"DataFunction\"", "]"}], "@", "next"}], ",", " ", 
                           RowBox[{"next", "[", "\"Token\"", "]"}]}], "]"}]}], 
-                          "\n", "        ", "]"}]}], ",", "\n", "    ", 
-                         RowBox[{"\"BlockType\"", "\[Rule]", "bt"}], ",", 
-                         "\n", "    ", RowBox[{"\"ResponseType\"", "\[Rule]", 
-                          "\n", "      ", RowBox[{"If", "[", RowBox[
-                          {RowBox[{RowBox[{"spec", "[", "\"Token\"", "]"}], 
-                          "=!=", "end"}], ",", "\n", "        ", 
-                          "\"EditNode\"", ",", "\n", "        ", 
-                          "\"CloseNode\""}], "\n", "        ", "]"}]}]}], 
-                       "\n", "    ", "|>"}]}], ";"}], "\n", RowBox[
+                          "\n", "  ", "  ", "    ", "]"}]}], ";", "\n", "  ", 
+                          "  ", RowBox[{"<|", "\n", "  ", "    ", RowBox[
+                          {RowBox[{"\"Node\"", "->", "main"}], ",", "\n", 
+                          "  ", "    ", RowBox[{"\"BlockType\"", "\[Rule]", 
+                          "bt"}], ",", "\n", "      ", RowBox[
+                          {"\"Precedence\"", "\[Rule]", RowBox[{"Lookup", 
+                          "[", RowBox[{"spec", ",", " ", "\"Precedence\"", 
+                          ",", " ", RowBox[{"-", "Infinity"}]}], "]"}]}], 
+                          ",", "\n", "  ", "    ", RowBox[
+                          {"\"ResponseType\"", "\[Rule]", "\n", "        ", 
+                          RowBox[{"If", "[", RowBox[{RowBox[{
+                          "structuredNodeMatchQ", "[", RowBox[{RowBox[
+                          {"main", "[", "\"Children\"", "]"}], ",", " ", 
+                          "blocks"}], "]"}], ",", "\n", "          ", 
+                          "\"EditNode\"", ",", "\n", "  ", "        ", 
+                          "\"CloseNode\""}], "\n", "  ", "        ", 
+                          "]"}]}]}], "\n", "  ", "    ", "|>"}]}]}], "\n", 
+                       "  ", "  ", "]"}]}], ";"}], "\n", RowBox[
                   {RowBox[{RowBox[{"closeNode", "[", RowBox[{"spec_", ",", 
                          " ", "next_", ",", " ", "node_", ",", " ", RowBox[
                           {"bt", ":", RowBox[{"{", RowBox[{"\"FixedLength\"", 
@@ -198,7 +306,11 @@ patterns are defined...\n\[RightFloor]", "Text", Evaluatable -> True],
                           "\"Token\"", "]"}]}], "]"}]}], "\n", "        ", 
                           "]"}]}], ",", "\n", "    ", RowBox[
                           {"\"BlockType\"", "\[Rule]", "bt"}], ",", "\n", 
-                         "    ", RowBox[{"\"ResponseType\"", "\[Rule]", "\n", 
+                         "    ", RowBox[{"\"Precedence\"", "\[Rule]", RowBox[
+                          {"Lookup", "[", RowBox[{"spec", ",", " ", 
+                          "\"Precedence\"", ",", " ", RowBox[{"-", 
+                          "Infinity"}]}], "]"}]}], ",", "\n", "    ", 
+                         RowBox[{"\"ResponseType\"", "\[Rule]", "\n", 
                           "      ", RowBox[{"If", "[", RowBox[{RowBox[
                           {RowBox[{"GetASTNodeProperty", "[", RowBox[{"node", 
                           ",", " ", "\"ChildCount\""}], "]"}], "<", RowBox[
@@ -218,43 +330,251 @@ patterns are defined...\n\[RightFloor]", "Text", Evaluatable -> True],
                           "next"}], ",", " ", RowBox[{"next", "[", 
                           "\"Token\"", "]"}]}], "]"}]}], "\n", "        ", 
                           "]"}]}], ",", "\n", "    ", RowBox[
-                          {"\"BlockType\"", "->", RowBox[{"node", "[", 
-                          "\"BlockType\"", "]"}]}], ",", "\n", "    ", 
-                         RowBox[{"\"ResponseType\"", "\[Rule]", 
+                          {"\"Precedence\"", "\[Rule]", RowBox[{"Lookup", 
+                          "[", RowBox[{"spec", ",", " ", "\"Precedence\"", 
+                          ",", " ", RowBox[{"-", "Infinity"}]}], "]"}]}], 
+                         ",", "\n", "    ", RowBox[{"\"BlockType\"", "->", 
+                          RowBox[{"node", "[", "\"BlockType\"", "]"}]}], ",", 
+                         "\n", "    ", RowBox[{"\"ResponseType\"", "\[Rule]", 
                           "\"EditNode\""}]}], "\n", "    ", "|>"}]}], ";"}], 
                  "\n", RowBox[{RowBox[{"closeNode", "[", RowBox[{"spec_", 
                        ",", " ", "next_", ",", " ", "node_", ",", " ", 
-                       "e_"}], "]"}], ":=", "\n", "  ", RowBox[
-                    {"PackageRaiseException", "[", RowBox[{"Automatic", ",", 
-                       " ", "\"Invalid block type: ``\"", ",", " ", "e"}], 
-                     "]"}]}]}], "CodeInput"]}, Open]]}, Open]], 
+                       RowBox[{"bt", ":", "\"Current\""}]}], "]"}], ":=", 
+                   "\n", "  ", RowBox[{"<|", "\n", "    ", RowBox[
+                      {RowBox[{"\"Node\"", "\[Rule]", "node"}], ",", "\n", 
+                       "    ", RowBox[{"\"Precedence\"", "\[Rule]", RowBox[
+                          {"Lookup", "[", RowBox[{"spec", ",", " ", 
+                          "\"Precedence\"", ",", " ", RowBox[{"-", 
+                          "Infinity"}]}], "]"}]}], ",", "\n", "    ", 
+                       RowBox[{"\"BlockType\"", "->", RowBox[{"node", "[", 
+                          "\"BlockType\"", "]"}]}], ",", "\n", "    ", 
+                       RowBox[{"\"ResponseType\"", "\[Rule]", 
+                         "\"CloseNode\""}]}], "\n", "    ", "|>"}]}], "\n", 
+                 RowBox[{RowBox[{"closeNode", "[", RowBox[{"spec_", ",", " ", 
+                       "next_", ",", " ", "node_", ",", " ", RowBox[{"bt", 
+                         ":", "\"Operator\""}]}], "]"}], ":=", "\n", "  ", 
+                   RowBox[{"<|", "\n", "    ", RowBox[{RowBox[{"\"Node\"", 
+                         "->", "\n", "      ", RowBox[{"AddASTNodeData", "[", 
+                          RowBox[{"node", ",", " ", "\n", "        ", RowBox[
+                          {RowBox[{"spec", "[", "\"DataFunction\"", "]"}], 
+                          "@", "next"}]}], "\n", "        ", "]"}]}], ",", 
+                       "\n", "    ", RowBox[{"\"Precedence\"", "\[Rule]", 
+                         RowBox[{"Lookup", "[", RowBox[{"spec", ",", " ", 
+                          "\"Precedence\"", ",", " ", "0"}], "]"}]}], ",", 
+                       "\n", "    ", RowBox[{"\"BlockType\"", "->", RowBox[
+                          {"node", "[", "\"BlockType\"", "]"}]}], ",", "\n", 
+                       "    ", RowBox[{"\"ResponseType\"", "\[Rule]", 
+                         "\"EditNode\""}]}], "\n", "    ", "|>"}]}], "\n", 
+                 RowBox[{RowBox[{RowBox[{"closeNode", "[", RowBox[{"spec_", 
+                         ",", " ", "next_", ",", " ", "node_", ",", " ", 
+                         "e_"}], "]"}], ":=", "\n", "  ", RowBox[
+                      {"PackageRaiseException", "[", RowBox[{"Automatic", 
+                         ",", " ", "\"Invalid block type: ``\"", ",", " ", 
+                         "e"}], "]"}]}], ";"}], "\n", RowBox[
+                  {RowBox[{RowBox[{"closeNode", "[", RowBox[{"spec_", ",", 
+                         " ", "next_", ",", " ", "state_"}], "]"}], ":=", 
+                     "\n", "  ", RowBox[{"closeNode", "[", RowBox[{"spec", 
+                         ",", " ", "next", ",", " ", RowBox[{"state", "[", 
+                          "\"CurrentNode\"", "]"}], ",", " ", RowBox[
+                          {"state", "[", "\"BlockType\"", "]"}]}], "]"}]}], 
+                   ";"}]}], "CodeInput"]}, Open]], 
+           Cell[CellGroupData[{Cell["\[LeftCeiling]closeOpenNode\[RightFloor]\
+", "CodeSubsubsubsection", Evaluatable -> True], Cell[BoxData[RowBox[
+                 {RowBox[{"closeOpenNode", "[", RowBox[{"spec_", ",", " ", 
+                      "next_", ",", " ", "state_"}], "]"}], ":=", "\n", "  ", 
+                  RowBox[{"Module", "[", RowBox[{RowBox[{"{", RowBox[
+                         {"closed", "=", RowBox[{"closeNode", "[", RowBox[
+                          {"spec", ",", " ", "next", ",", " ", "state"}], 
+                          "]"}]}], "}"}], ",", "\n", "    ", RowBox[{"<|", 
+                        "\n", "      ", RowBox[{RowBox[{"\"Node\"", "->", 
+                          "\n", "        ", RowBox[{"MakeASTNode", "[", "\n", 
+                          "          ", RowBox[{"\"Compound\"", ",", " ", 
+                          "\n", "          ", RowBox[{"{", RowBox[{"closed", 
+                          "[", "\"Node\"", "]"}], "}"}], ",", "\n", 
+                          "          ", RowBox[{"next", "[", "\"Token\"", 
+                          "]"}]}], "\n", "          ", "]"}]}], ",", "\n", 
+                          "      ", RowBox[{"\"Precedence\"", "\[Rule]", 
+                          RowBox[{"spec", "[", "\"Precedence\"", "]"}]}], 
+                          ",", "\n", "      ", RowBox[{"\"BlockType\"", "->", 
+                          RowBox[{"spec", "[", "\"BlockType\"", "]"}]}], ",", 
+                          "\n", "  ", "    ", RowBox[{"\"ResponseType\"", 
+                          "\[Rule]", "\"EditNode\""}]}], "\n", "      ", 
+                        "|>"}]}], "\n", "    ", "]"}]}]], "CodeInput"]}, 
+             Open]], Cell[CellGroupData[
+             {Cell["\[LeftCeiling]handleOperator\[RightFloor]", 
+               "CodeSubsubsubsection", Evaluatable -> True], Cell[BoxData[
+                RowBox[{RowBox[{"handleOperator", "[", RowBox[{"spec_", ",", 
+                      " ", "next_", ",", " ", "state_"}], "]"}], ":=", "\n", 
+                  "  ", RowBox[{"Which", "[", "\n", "    ", RowBox[
+                     {RowBox[{RowBox[{"state", "[", "\"Precedence\"", "]"}], 
+                        "<", RowBox[{"spec", "[", "\"Precedence\"", "]"}]}], 
+                      ",", "\n", "      ", RowBox[{"(*", " ", RowBox[{"the", 
+                          " ", "next", " ", "node", " ", "has", " ", "a", 
+                          " ", "higher", " ", "precedence", " ", "than", " ", 
+                          "the", " ", "current", " ", "node", " ", "so", " ", 
+                          "we", " ", "simply", " ", "open", " ", "a", " ", 
+                          "new", " ", "node"}], " ", "*)"}], "\n", "      ", 
+                      RowBox[{"openNode", "[", RowBox[{"spec", ",", " ", 
+                          "next"}], "]"}], ",", "\n", "    ", RowBox[
+                       {RowBox[{"state", "[", "\"Precedence\"", "]"}], "==", 
+                        RowBox[{"spec", "[", "\"Precedence\"", "]"}]}], ",", 
+                      "\n", "      ", RowBox[{"(*", " ", "\n", 
+                        "                ", RowBox[{"the", " ", "next", " ", 
+                          "node", " ", "has", " ", "a", " ", "equal", " ", 
+                          "precedence", " ", "to", " ", "the", " ", 
+                          "current", " ", "node", " ", "so", " ", "we", " ", 
+                          "close", " ", "off", " ", "the", " ", "current", 
+                          " ", "one", " ", "\n", "                  ", "and", 
+                          " ", "open", " ", "a", " ", "new", " ", "one", " ", 
+                          "with", " ", "the", " ", "current", " ", "one", 
+                          " ", "as", " ", "an", " ", "argument"}], "\n", 
+                        "             ", "*)"}], "\n", "      ", RowBox[
+                       {"closeOpenNode", "[", RowBox[{"spec", ",", " ", 
+                          "next", ",", " ", "state"}], "]"}], ",", "\n", 
+                      "    ", "True", ",", "\n", "      ", RowBox[{"(*", " ", 
+                        "\n", "                ", RowBox[{RowBox[{RowBox[
+                          {"the", " ", "next", " ", "node", " ", "has", " ", 
+                          "a", " ", "lower", " ", "precedence", " ", "than", 
+                          " ", "the", " ", "current", " ", "node"}], "..."}], 
+                          " ", "but", " ", "operationally", " ", RowBox[
+                          {"it", "'"}], "s", " ", "like", " ", "equal", " ", 
+                          "for", " ", "now"}], "\n", "               ", 
+                        "*)"}], "\n", "      ", RowBox[{"closeOpenNode", "[", 
+                        RowBox[{"spec", ",", " ", "next", ",", " ", 
+                          "state"}], "]"}]}], "\n", "    ", "]"}]}]], 
+               "CodeInput"]}, Open]]}, Open]], 
         Cell[CellGroupData[{Cell["\[LeftCeiling]ApplyParser\[RightFloor]", 
-            "CodeSubsubsection", Evaluatable -> True], 
-           Cell[CellGroupData[{Cell["\[LeftCeiling]stack\[RightFloor]", 
+            "CodeSubsubsection", Evaluatable -> True], Cell["\[LeftCeiling]\n\
+\tWe\[CloseCurlyQuote]re gonna have a two layer parser, with a standard \
+recursive descent parser which dumps into an operator-precedence parser when \
+necessary and then that calls back into the recursive descent parser\n\tAn \
+example of how this could work:\n\t\n\tfor ( int i = 0; i<10; i++ ) { \
+...\n\t\n\t1: Tokenizer returns \
+{\[OpenCurlyDoubleQuote]\[CloseCurlyDoubleQuote], \
+\[OpenCurlyDoubleQuote]for\[CloseCurlyDoubleQuote]}\n\t\trecursive-descent \
+parser sees for: opens \
+Node0({\[OpenCurlyDoubleQuote]\[CloseCurlyDoubleQuote]}, \
+\[OpenCurlyDoubleQuote]for\[CloseCurlyDoubleQuote]);\n\t2: Tokenizer returns \
+{\[OpenCurlyDoubleQuote] \[CloseCurlyDoubleQuote], \
+\[OpenCurlyDoubleQuote](\[CloseCurlyDoubleQuote]}\n\t\tRDP sees \
+\[OpenCurlyDoubleQuote](\[OpenCurlyDoubleQuote]: pushes Node0 onto RDP stack; \
+opens Node1({\[OpenCurlyDoubleQuote] \[OpenCurlyDoubleQuote]}, \
+\[OpenCurlyDoubleQuote](\[OpenCurlyDoubleQuote]);\n\t3: Tokenizer returns \
+{\[OpenCurlyDoubleQuote]int i\[CloseCurlyDoubleQuote], \
+\[OpenCurlyDoubleQuote]=\[CloseCurlyDoubleQuote]}\n\t\tRDP sees \
+\[OpenCurlyDoubleQuote]=\[CloseCurlyDoubleQuote], an infix operator: enters \
+operator-precedence parser\n\t\tOPP opens Node2({\[OpenCurlyDoubleQuote]int \
+i\[CloseCurlyDoubleQuote]}, \
+\[OpenCurlyDoubleQuote]=\[CloseCurlyDoubleQuote])\n\t\t4: Tokenizer returns \
+{\[OpenCurlyDoubleQuote]0\[CloseCurlyDoubleQuote], \
+\[OpenCurlyDoubleQuote];\[CloseCurlyDoubleQuote]}\n\t\t\tOPP sees \
+\[OpenCurlyDoubleQuote];\[CloseCurlyDoubleQuote] which is infix with lower \
+precedence:\n\t\t\t \tinserts \
+\[OpenCurlyDoubleQuote]0\[CloseCurlyDoubleQuote] into Node2; closes Node2 and \
+opens Node3({Node2}, \
+\[OpenCurlyDoubleQuote];\[CloseCurlyDoubleQuote]);\n\t\t5: Tokenizer returns \
+{\[OpenCurlyDoubleQuote] i\[CloseCurlyDoubleQuote], \
+\[OpenCurlyDoubleQuote]<\[CloseCurlyDoubleQuote]}\n\t\t \tOPP sees \
+\[OpenCurlyDoubleQuote]<\[CloseCurlyDoubleQuote] which is infix with higher \
+precedence:\n\t\t \t\tpushes Node3 onto OPP stack; opens \
+Node4({\[OpenCurlyDoubleQuote] i\[CloseCurlyDoubleQuote]}, \
+\[OpenCurlyDoubleQuote]<\[CloseCurlyDoubleQuote])\n\t\t 6: Tokenizer returns \
+{\[OpenCurlyDoubleQuote]10\[CloseCurlyDoubleQuote], \
+\[OpenCurlyDoubleQuote];\[CloseCurlyDoubleQuote]}\n\t\t \tOPP sees \
+\[OpenCurlyDoubleQuote];\[CloseCurlyDoubleQuote] which is infix with lower \
+precedence:\n\t\t\t\tinserts \
+\[OpenCurlyDoubleQuote]10\[CloseCurlyDoubleQuote] into Node4; closes Node4 \
+and inserts Node4 into \
+Node3;\n\t\t\t\t\[OpenCurlyDoubleQuote];\[CloseCurlyDoubleQuote] has same \
+precedence as Node3; closes Node3 and opens Node5({Node3}, \
+\[OpenCurlyDoubleQuote];\[CloseCurlyDoubleQuote])\n\t\t7: Tokenizer returns \
+{\[OpenCurlyDoubleQuote] i\[CloseCurlyDoubleQuote], \
+\[OpenCurlyDoubleQuote]++\[CloseCurlyDoubleQuote]}\n\t\t\tOPP sees \
+\[OpenCurlyDoubleQuote]++\[CloseCurlyDoubleQuote] which is not an infix \
+operator and higher precedence than \
+\[OpenCurlyDoubleQuote];\[CloseCurlyDoubleQuote]\n\t\t\t\tinserts \
+Node6({\[OpenCurlyDoubleQuote] i\[CloseCurlyDoubleQuote]}, \
+\[OpenCurlyDoubleQuote]++\[CloseCurlyDoubleQuote]) into Node5\n\t\t8: \
+Tokenizer returns {\[OpenCurlyDoubleQuote] \[CloseCurlyDoubleQuote], \
+\[OpenCurlyDoubleQuote])\[CloseCurlyDoubleQuote]}\n\t\t\tOPP sees \
+\[OpenCurlyDoubleQuote])\[CloseCurlyDoubleQuote] which is not and infix \
+operator and lower equal precedence to \
+\[OpenCurlyDoubleQuote];\[CloseCurlyDoubleQuote]\n\t\t\t\tcloses Node6 and \
+inserts into Node1\n\t\t\t\texits OPP\n\t\tRDP sees \
+\[OpenCurlyDoubleQuote])\[CloseCurlyDoubleQuote]: matches closer for Node1 \
+and so closes Node1\n\t9: Tokenizer returns \
+\[OpenCurlyDoubleQuote]{\[OpenCurlyDoubleQuote] ...\n\nAnother example would \
+be\n\t\n\ti+2*5^(x+10)\n\t\n\t1: Tokenizer returns \
+{\[OpenCurlyDoubleQuote]i\[CloseCurlyDoubleQuote], \
+\[OpenCurlyDoubleQuote]+\[CloseCurlyDoubleQuote]}\n\t\tRDP sees \
+\[OpenCurlyDoubleQuote]+\[CloseCurlyDoubleQuote]: enters ODP\n\t\tOPD sees \
+\[OpenCurlyDoubleQuote]+\[CloseCurlyDoubleQuote]: opens \
+Node0({\[OpenCurlyDoubleQuote]i\[CloseCurlyDoubleQuote]}, \
+\[OpenCurlyDoubleQuote]+\[CloseCurlyDoubleQuote])\n\t\t2: Tokenizer returns \
+{\[OpenCurlyDoubleQuote]2\[CloseCurlyDoubleQuote], \
+\[OpenCurlyDoubleQuote]*\[CloseCurlyDoubleQuote]}\n\t\t\tODP sees \
+\[OpenCurlyDoubleQuote]*\[CloseCurlyDoubleQuote] which is a higher precedence \
+operator than \
+\[OpenCurlyDoubleQuote]+\[CloseCurlyDoubleQuote]:\n\t\t\t\topens \
+Node1({\[OpenCurlyDoubleQuote]2\[CloseCurlyDoubleQuote]}, \
+\[OpenCurlyDoubleQuote]*\[CloseCurlyDoubleQuote])\n\t\t3: Tokenizer returns \
+{\[OpenCurlyDoubleQuote]5\[CloseCurlyDoubleQuote], \
+\[OpenCurlyDoubleQuote]^\[CloseCurlyDoubleQuote]}\n\t\t\tODP sees \
+\[OpenCurlyDoubleQuote]^\[CloseCurlyDoubleQuote] which is a higher precedence \
+operator than \[OpenCurlyDoubleQuote]+\[OpenCurlyDoubleQuote]:\n\t\t\t\topens \
+Node2({\[OpenCurlyDoubleQuote]5\[CloseCurlyDoubleQuote]}, \
+\[OpenCurlyDoubleQuote]*\[CloseCurlyDoubleQuote])\n\t\t4: Tokenizer returns \
+{\[OpenCurlyDoubleQuote]\[CloseCurlyDoubleQuote], \
+\[OpenCurlyDoubleQuote](\[CloseCurlyDoubleQuote]}:\n\t\t\tODP sees this \
+neither an infix operator nor a right-associative operator: enters \
+RDP\n\t\t\tRDP sees \[OpenCurlyDoubleQuote](\[OpenCurlyDoubleQuote]: opens \
+Node3({\[OpenCurlyDoubleQuote]\[CloseCurlyDoubleQuote]}, \
+\[OpenCurlyDoubleQuote](\[CloseCurlyDoubleQuote])\n\t\t\t5: Tokenizer returns \
+ {\[OpenCurlyDoubleQuote]x\[CloseCurlyDoubleQuote], \
+\[OpenCurlyDoubleQuote]+\[OpenCurlyDoubleQuote]}:\n\t\t\t\tRDP sees \
+\[OpenCurlyDoubleQuote]+\[OpenCurlyDoubleQuote]: enters ODP\n\t\t\t\tOPD sees \
+\[OpenCurlyDoubleQuote]+\[OpenCurlyDoubleQuote]: opens \
+Node4({\[OpenCurlyDoubleQuote]x\[CloseCurlyDoubleQuote]}, \
+\[OpenCurlyDoubleQuote]+\[OpenCurlyDoubleQuote])\n\t\t\t...\t\n\[RightFloor]"\
+, "Text", Evaluatable -> True, CellChangeTimes -> {{3.766277837663004*^9, 
+             3.766277876142982*^9}, {3.766277958001363*^9, 
+             3.766278365970883*^9}, {3.7662788041246433*^9, 
+             3.766278865705439*^9}, {3.7662789274028788*^9, 
+             3.766278962845703*^9}}], Cell[CellGroupData[
+             {Cell["\[LeftCeiling]exprStack\[RightFloor]", 
                "CodeSubsubsubsection", Evaluatable -> True], 
               Cell[
                "\[LeftCeiling]\n\tSimple mutable stack type\n\[RightFloor]", 
                "Text", Evaluatable -> True], Cell[BoxData[
-                {RowBox[{RowBox[{RowBox[{"stack", "[", "]"}], ":=", "\n", 
+                {RowBox[{RowBox[{RowBox[{"exprStack", "[", "]"}], ":=", "\n", 
                      "  ", RowBox[{"With", "[", RowBox[{RowBox[{"{", RowBox[
                           {"s", "=", RowBox[{"Unique", "[", "stackVar", 
                           "]"}]}], "}"}], ",", " ", "\n", "    ", RowBox[
-                          {RowBox[{"s", " ", "=", " ", RowBox[{"{", "}"}]}], 
-                          ";", "\n", "    ", RowBox[{"stack", "[", "s", 
+                          {RowBox[{"SetAttributes", "[", RowBox[{"s", ",", 
+                          " ", "Temporary"}], "]"}], ";", "\n", "    ", 
+                          RowBox[{"s", " ", "=", " ", RowBox[{"{", "}"}]}], 
+                          ";", "\n", "    ", RowBox[{"exprStack", "[", "s", 
                           "]"}]}]}], "\n", "    ", "]"}]}], ";"}], "\n", 
-                 RowBox[{RowBox[{RowBox[{RowBox[{"stack", "[", "s_", "]"}], 
-                       "@", RowBox[{"\"Push\"", "[", "val_", "]"}]}], ":=", 
-                     "\n", "  ", RowBox[{"(", RowBox[{RowBox[{"AppendTo", 
-                          "[", RowBox[{"s", ",", " ", "val"}], "]"}], ";", 
-                         RowBox[{"s", "[", RowBox[{"[", RowBox[{"-", "1"}], 
-                          "]"}], "]"}]}], ")"}]}], ";"}], "\n", 
-                 RowBox[{RowBox[{RowBox[{RowBox[{"stack", "[", "s_", "]"}], 
-                       "@", RowBox[{"\"Pop\"", "[", "]"}]}], ":=", "\n", 
-                     "  ", RowBox[{"AppendTo", "[", RowBox[{"s", ",", " ", 
-                         "val"}], "]"}]}], ";", RowBox[{"s", "[", RowBox[
-                      {"[", RowBox[{"-", "1"}], "]"}], "]"}]}], "\n", 
-                 RowBox[{RowBox[{"stack", "~", "SetAttributes", "~", 
-                     "HoldFirst"}], ";"}]}], "CodeInput"]}, Open]], 
+                 RowBox[{RowBox[{RowBox[{RowBox[{"exprStack", "[", "s_", 
+                         "]"}], "@", RowBox[{"\"Push\"", "[", "val_", 
+                         "]"}]}], ":=", "\n", "  ", RowBox[{"(", RowBox[
+                        {RowBox[{"AppendTo", "[", RowBox[{"s", ",", " ", 
+                          "val"}], "]"}], ";", RowBox[{"s", "[", RowBox[
+                          {"[", RowBox[{"-", "1"}], "]"}], "]"}]}], ")"}]}], 
+                   ";"}], "\n", RowBox[{RowBox[{RowBox[{RowBox[{"exprStack", 
+                         "[", "s_", "]"}], "@", RowBox[{"\"Pop\"", "[", 
+                         "]"}]}], ":=", "\n", "  ", RowBox[{"With", "[", 
+                       RowBox[{RowBox[{"{", RowBox[{"old", "=", RowBox[
+                          {"s", "[", RowBox[{"[", RowBox[{"-", "1"}], "]"}], 
+                          "]"}]}], "}"}], ",", " ", RowBox[{RowBox[{"s", "=", 
+                          RowBox[{"s", "[", RowBox[{"[", RowBox[{";;", RowBox[
+                          {"-", "2"}]}], "]"}], "]"}]}], ";", " ", "old"}]}], 
+                       "]"}]}], ";"}], "\n", RowBox[{RowBox[{RowBox[
+                      {RowBox[{"exprStack", "[", "s_", "]"}], "@", RowBox[
+                        {"\"Size\"", "[", "]"}]}], ":=", "\n", "  ", 
+                     RowBox[{"Length", "[", "s", "]"}]}], ";"}], "\n", 
+                 RowBox[{RowBox[{"exprStack", "~", "SetAttributes", "~", 
+                     "HoldFirst"}], ";"}]}], "CodeInput"]}, Closed]], 
            Cell[CellGroupData[
              {Cell["\[LeftCeiling]continueParse\[RightFloor]", 
                "CodeSubsubsubsection", Evaluatable -> True], Cell[BoxData[
@@ -276,18 +596,30 @@ we\[CloseCurlyQuote]ll call it inside the precedence parser.\n\[RightFloor]",
                 {RowBox[{RowBox[{RowBox[{"manageResponse", "[", RowBox[
                         {RowBox[{"{", RowBox[{"stack_", ",", " ", "state_"}], 
                           "}"}], ",", " ", "resp_", ",", " ", "toks_"}], 
-                       "]"}], ":=", "\n", "  ", RowBox[{"Switch", "[", 
-                       RowBox[{RowBox[{"resp", "[", "\"ResponseType\"", 
-                          "]"}], ",", "\n", "    ", "\"OpenNode\"", ",", 
-                         "\n", "  ", "    ", RowBox[{RowBox[{"AppendTo", "[", 
-                          RowBox[{"stack", ",", " ", "state"}], "]"}], ";", 
-                          "\n", "      ", RowBox[{RowBox[{"state", "[", 
-                          "\"CurrentNode\"", "]"}], " ", "=", " ", RowBox[
-                          {"resp", "[", "\"Node\"", "]"}]}], ";", "\n", 
-                          "      ", RowBox[{RowBox[{"state", "[", 
-                          "\"BlockType\"", "]"}], " ", "=", " ", RowBox[
-                          {"resp", "[", "\"BlockType\"", "]"}]}]}], ",", 
-                         "\n", "  ", "  ", "\"EditNode\"", ",", "\n", 
+                       "]"}], ":=", "\n", "  ", RowBox[{"imanageResponse", 
+                       "[", RowBox[{RowBox[{"{", RowBox[{"stack", ",", " ", 
+                          "state"}], "}"}], ",", " ", RowBox[{"resp", "[", 
+                          "\"ResponseType\"", "]"}], ",", " ", "resp", ",", 
+                         " ", "toks"}], "]"}]}], ";"}], "\n", RowBox[
+                  {RowBox[{"manageResponse", "~", "SetAttributes", "~", 
+                     "HoldFirst"}], ";"}]}], "CodeInput"], Cell[BoxData[
+                {RowBox[{RowBox[{RowBox[{"imanageResponse", "[", RowBox[
+                        {RowBox[{"{", RowBox[{"stack_", ",", " ", "state_"}], 
+                          "}"}], ",", " ", "type_", ",", " ", "resp_", ",", 
+                         " ", "toks_"}], "]"}], ":=", "\n", "  ", RowBox[
+                      {"Switch", "[", RowBox[{"type", ",", "\n", "    ", 
+                         "\"OpenNode\"", ",", "\n", "  ", "    ", RowBox[
+                          {RowBox[{"AppendTo", "[", RowBox[{"stack", ",", 
+                          " ", "state"}], "]"}], ";", "\n", "      ", RowBox[
+                          {RowBox[{"state", "[", "\"CurrentNode\"", "]"}], 
+                          " ", "=", " ", RowBox[{"resp", "[", "\"Node\"", 
+                          "]"}]}], ";", "\n", "      ", RowBox[{RowBox[
+                          {"state", "[", "\"BlockType\"", "]"}], " ", "=", 
+                          " ", RowBox[{"resp", "[", "\"BlockType\"", "]"}]}], 
+                          ";", "\n", "      ", RowBox[{RowBox[{"state", "[", 
+                          "\"Precedence\"", "]"}], " ", "=", " ", RowBox[
+                          {"resp", "[", "\"Precedence\"", "]"}]}], ";"}], 
+                         ",", "\n", "    ", "\"EditNode\"", ",", "\n", 
                          "      ", RowBox[{RowBox[{"state", "[", 
                           "\"CurrentNode\"", "]"}], " ", "=", " ", RowBox[
                           {"resp", "[", "\"Node\"", "]"}]}], ",", "\n", "  ", 
@@ -301,61 +633,151 @@ we\[CloseCurlyQuote]ll call it inside the precedence parser.\n\[RightFloor]",
                           "\"CurrentNode\"", "]"}], " ", "=", " ", RowBox[
                           {"AddASTNodeData", "[", RowBox[{RowBox[{"state", 
                           "[", "\"CurrentNode\"", "]"}], ",", " ", RowBox[
-                          {"resp", "[", "\"Node\"", "]"}]}], "]"}]}]}]}], 
-                       "\n", "    ", "]"}]}], ";"}], "\n", RowBox[
-                  {RowBox[{"manageResponse", "~", "SetAttributes", "~", 
+                          {"resp", "[", "\"Node\"", "]"}]}], "]"}]}]}], ",", 
+                         "\n", "    ", "\"ReturnNode\"", ",", " ", "\n", 
+                         "      ", RowBox[{"(*", " ", RowBox[{RowBox[{"much", 
+                          " ", "like", " ", "closing", " ", "a", " ", 
+                          "node"}], ",", " ", RowBox[{"but", " ", "rather", 
+                          " ", "than", " ", "inserting", " ", "it", " ", 
+                          "into", " ", "its", " ", "parent", " ", "we", " ", 
+                          "simply", " ", "set", " ", "the", " ", "node", " ", 
+                          "state"}]}], " ", "*)"}], "\n", "      ", RowBox[
+                          {RowBox[{"state", " ", "=", " ", RowBox[{"stack", 
+                          "[", RowBox[{"[", RowBox[{"-", "1"}], "]"}], 
+                          "]"}]}], ";", "\n", "  ", "    ", RowBox[{"stack", 
+                          " ", "=", " ", RowBox[{"stack", "[", RowBox[{"[", 
+                          RowBox[{";;", RowBox[{"-", "2"}]}], "]"}], "]"}]}], 
+                          ";", "\n", "      ", RowBox[{RowBox[{"state", "[", 
+                          "\"CurrentNode\"", "]"}], " ", "=", " ", RowBox[
+                          {"resp", "[", "\"Node\"", "]"}]}]}], ",", "\n", 
+                         "    ", "_List", ",", "\n", "      ", RowBox[
+                          {"MapThread", "[", "\n", "        ", RowBox[
+                          {RowBox[{RowBox[{"imanageResponse", "[", RowBox[
+                          {RowBox[{"{", RowBox[{"stack", ",", " ", "state"}], 
+                          "}"}], ",", " ", "#", ",", " ", "#2", ",", " ", 
+                          "toks"}], "]"}], "&"}], ",", "\n", "        ", 
+                          RowBox[{"{", "\n", "          ", RowBox[{"type", 
+                          ",", "\n", "          ", RowBox[{"resp", "[", 
+                          "\"Responses\"", "]"}]}], "\n", "          ", 
+                          "}"}]}], "\n", "        ", "]"}]}], "\n", "    ", 
+                       "]"}]}], ";"}], "\n", RowBox[{RowBox[
+                    {"imanageResponse", "~", "SetAttributes", "~", 
                      "HoldFirst"}], ";"}]}], "CodeInput"]}, Open]], 
-           Cell[CellGroupData[
-             {Cell["\[LeftCeiling]parseExpression\[RightFloor]", 
-               "CodeSubsubsubsection", Evaluatable -> True], 
-              Cell["\[LeftCeiling]\n\tThis implements our precedence parser. \
-Not elegant but will hopefully get the job done. Presumably each \
-\[OpenCurlyDoubleQuote]Read\[CloseCurlyDoubleQuote] call can be optimized or \
-a faster, less-safe \[OpenCurlyDoubleQuote]Reader\[CloseCurlyDoubleQuote] \
-object can be returned.\n\[RightFloor]", "Text", Evaluatable -> True], 
-              Cell[BoxData[{RowBox[{RowBox[{RowBox[{"parseExpression", "[", 
-                       RowBox[{RowBox[{"{", RowBox[{"state_", ",", " ", 
-                          "stack_"}], "}"}], ",", " ", "handlers_", ",", " ", 
+           Cell[CellGroupData[{Cell["\[LeftCeiling]useODP\[RightFloor]", 
+               "CodeSubsubsubsection", Evaluatable -> True], Cell[BoxData[
+                RowBox[{RowBox[{RowBox[{"useODP", "[", RowBox[{"handler_", 
+                        ",", " ", "next_"}], "]"}], ":=", "\n", "  ", 
+                    RowBox[{"TrueQ", "[", RowBox[{RowBox[{"handler", "[", 
+                          "\"TokenType\"", "]"}], "\[Equal]", 
+                        "\"Operator\""}], "]"}]}], ";"}]], "CodeInput"]}, 
+             Open]], Cell[CellGroupData[
+             {Cell["\[LeftCeiling]handleExitODP\[RightFloor]", 
+               "CodeSubsubsubsection", Evaluatable -> True], Cell[BoxData[
+                RowBox[{RowBox[{"handleExitODP", "[", RowBox[{RowBox[
+                       {"{", RowBox[{"stack_", ",", " ", "state_"}], "}"}], 
+                      ",", " ", "handler_", ",", " ", "next_"}], "]"}], ":=", 
+                  "\n", "  ", RowBox[{"Switch", "[", RowBox[{RowBox[
+                       {"handler", "[", "\"TokenType\"", "]"}], ",", "\n", 
+                      "    ", "\"BlockOpener\"", ",", "\n", "      ", "None", 
+                      ",", "\n", "    ", "\"BlockCloser\"", ",", "\n", 
+                      "      ", RowBox[{"closeNode", "[", RowBox[{"handler", 
+                          ",", " ", "next", ",", " ", "state"}], "]"}], ",", 
+                      "\n", "    ", "_", ",", "\n", "      ", RowBox[
+                       {"With", "[", "\n", "        ", RowBox[{RowBox[
+                          {"{", RowBox[{"r1", "=", RowBox[{"closeOpenNode", 
+                          "[", RowBox[{"handler", ",", " ", "next", ",", " ", 
+                          "state"}], "]"}]}], "}"}], ",", "\n", "        ", 
+                          RowBox[{"<|", "\n", "          ", RowBox[{RowBox[
+                          {"\"Responses\"", "\[Rule]", RowBox[{"{", RowBox[
+                          {"r1", ",", " ", RowBox[{"closeNode", "[", RowBox[
+                          {"handler", ",", " ", "next", ",", " ", RowBox[
+                          {"r1", "[", "\"Node\"", "]"}], ",", " ", 
+                          "\"Current\""}], "]"}]}], "}"}]}], ",", "\n", 
+                          "          ", RowBox[{"\"ResponseType\"", 
+                          "\[Rule]", RowBox[{"{", "\n", "            ", 
+                          RowBox[{RowBox[{"r1", "[", "\"ResponseType\"", 
+                          "]"}], ",", "\n", "            ", 
+                          "\"CloseNode\""}], "\n", "            ", "}"}]}]}], 
+                          "\n", "          ", "|>"}]}], "\n", "        ", 
+                        "]"}]}], "\n", "    ", "]"}]}]], "CodeInput"]}, 
+             Open]], Cell[CellGroupData[
+             {Cell["\[LeftCeiling]parseStream\[RightFloor]", 
+               "CodeSubsubsubsection", Evaluatable -> True], Cell[BoxData[
+                {RowBox[{RowBox[{RowBox[{"parseStream", "[", RowBox[
+                        {RowBox[{"{", RowBox[{"stack_", ",", " ", "state_", 
+                          ",", " ", "handlers_"}], "}"}], ",", " ", 
                          "toks_"}], "]"}], ":=", "\n", "  ", RowBox[
-                      {"Module", "[", RowBox[{RowBox[{"{", RowBox[{"next", 
-                          ",", " ", "handler", ",", " ", "resp", ",", " ", 
-                          "op"}], "}"}], ",", "\n", "    ", RowBox[
+                      {"Module", "[", "\n", "    ", RowBox[{RowBox[{"{", 
+                          "\n", "      ", RowBox[{"next", ",", " ", 
+                          "handler", ",", " ", "resp", ",", "\n", "      ", 
+                          RowBox[{"mode", " ", "=", " ", "\"RDP\""}]}], "\n", 
+                          "      ", "}"}], ",", "\n", "    ", RowBox[
                           {RowBox[{"next", " ", "=", " ", RowBox[{"toks", 
-                          "@", RowBox[{"\"Peek\"", "[", "]"}]}]}], ";", "\n", 
+                          "@", RowBox[{"\"Read\"", "[", "]"}]}]}], ";", "\n", 
                           "    ", RowBox[{"handler", " ", "=", " ", RowBox[
                           {"Lookup", "[", RowBox[{"handlers", ",", " ", 
                           RowBox[{"next", "[", "\"Token\"", "]"}]}], "]"}]}], 
                           ";", "\n", "    ", RowBox[{"While", "[", RowBox[
                           {RowBox[{"continueParse", "[", RowBox[{"handler", 
                           ",", " ", "next"}], "]"}], ",", "\n", "      ", 
-                          RowBox[{RowBox[{"If", "[", RowBox[{RowBox[{RowBox[
-                          {RowBox[{"handler", "[", "\"Arity\"", "]"}], 
-                          "\[Equal]", "2"}], "&&", RowBox[{RowBox[{"handler", 
-                          "[", "\"Precedence\"", "]"}], ">", "0"}]}], ",", 
-                          "\n", "  ", "      ", RowBox[{"While", "[", RowBox[
-                          {RowBox[{"descendPrecedence", "[", "]"}], ",", 
-                          "\n", "  ", "        ", RowBox[{RowBox[{"op", " ", 
-                          "=", " ", "next"}], ";", "\n", "          ", RowBox[
-                          {"toks", "@", RowBox[{"\"Skip\"", "[", "]"}]}], 
-                          ";"}]}], "\n", "          ", "]"}], ",", "\n", 
-                          "        ", RowBox[{RowBox[{"resp", " ", "=", " ", 
-                          RowBox[{"handleToken", "[", RowBox[{"handler", ",", 
-                          " ", "next", ",", " ", "state"}], "]"}]}], ";", 
-                          "\n", "  ", "      ", RowBox[{"manageResponse", 
-                          "[", RowBox[{RowBox[{"{", RowBox[{"state", ",", 
-                          " ", "stack"}], "}"}], ",", " ", "resp", ",", " ", 
-                          "toks"}], "]"}], ";"}]}], "\n", "        ", "]"}], 
-                          ";", "\n", "      ", RowBox[{"next", " ", "=", " ", 
-                          RowBox[{"toks", "@", RowBox[{"\"Read\"", "[", 
-                          "]"}]}]}], ";", "\n", "  ", "  ", "  ", RowBox[
+                          RowBox[{RowBox[{"If", "[", RowBox[{RowBox[{"mode", 
+                          "===", "\"RDP\""}], ",", "\n", "        ", RowBox[
+                          {"If", "[", RowBox[{RowBox[{"!", RowBox[{"useODP", 
+                          "[", RowBox[{"handler", ",", " ", "next"}], 
+                          "]"}]}], ",", "\n", "          ", RowBox[{RowBox[
+                          {"resp", " ", "=", " ", RowBox[{"handleToken", "[", 
+                          RowBox[{"handler", ",", " ", "next", ",", " ", 
+                          "state"}], "]"}]}], ";", "\n", "          ", RowBox[
+                          {"manageResponse", "[", RowBox[{RowBox[{"{", RowBox[
+                          {"stack", ",", " ", "state"}], "}"}], ",", " ", 
+                          "resp", ",", " ", "toks"}], "]"}], ";", "\n", 
+                          "          ", RowBox[{"next", " ", "=", " ", RowBox[
+                          {"toks", "@", RowBox[{"\"Read\"", "[", "]"}]}]}], 
+                          ";", "\n", "  ", "  ", "  ", "    ", RowBox[
                           {"handler", " ", "=", " ", RowBox[{"Lookup", "[", 
                           RowBox[{"handlers", ",", " ", RowBox[{"next", "[", 
-                          "\"Token\"", "]"}]}], "]"}]}], ";"}]}], "\n", 
-                          "      ", "]"}]}]}], "\n", "    ", "]"}]}], ";"}], 
-                 "\n", RowBox[{RowBox[{"parseExpression", "~", 
-                     "SetAttributes", "~", "HoldFirst"}], ";"}]}], 
-               "CodeInput"]}, Open]], Cell[CellGroupData[
-             {Cell["\[LeftCeiling]ParseStream\[RightFloor]", 
+                          "\"Token\"", "]"}]}], "]"}]}], ";"}], ",", "\n", 
+                          "          ", RowBox[{"mode", " ", "=", " ", 
+                          "\"ODP\""}]}], "\n", "  ", "        ", "]"}], ",", 
+                          "\n", "  ", "      ", RowBox[{"If", "[", RowBox[
+                          {RowBox[{"useODP", "[", RowBox[{"handler", ",", 
+                          " ", "next"}], "]"}], ",", "\n", "  ", "        ", 
+                          RowBox[{RowBox[{"resp", " ", "=", " ", RowBox[
+                          {"handleOperator", "[", RowBox[{"handler", ",", 
+                          " ", "next", ",", " ", "state"}], "]"}]}], ";", 
+                          "\n", "          ", RowBox[{"manageResponse", "[", 
+                          RowBox[{RowBox[{"{", RowBox[{"stack", ",", " ", 
+                          "state"}], "}"}], ",", " ", "resp", ",", " ", 
+                          "toks"}], "]"}], ";", "\n", "          ", RowBox[
+                          {"next", " ", "=", " ", RowBox[{"toks", "@", RowBox[
+                          {"\"Read\"", "[", "]"}]}]}], ";", "\n", "  ", "  ", 
+                          "  ", "    ", RowBox[{"handler", " ", "=", " ", 
+                          RowBox[{"Lookup", "[", RowBox[{"handlers", ",", 
+                          " ", RowBox[{"next", "[", "\"Token\"", "]"}]}], 
+                          "]"}]}], ";"}], ",", "\n", "          ", RowBox[
+                          {RowBox[{"resp", " ", "=", " ", RowBox[{
+                          "handleExitODP", "[", RowBox[{RowBox[{"{", RowBox[
+                          {"stack", ",", " ", "state"}], "}"}], ",", " ", 
+                          "handler", ",", " ", "next"}], "]"}]}], ";", "\n", 
+                          "          ", RowBox[{"If", "[", RowBox[{RowBox[
+                          {"resp", "=!=", "None"}], ",", " ", "\n", 
+                          "            ", RowBox[{RowBox[{"manageResponse", 
+                          "[", RowBox[{RowBox[{"{", RowBox[{"stack", ",", 
+                          " ", "state"}], "}"}], ",", " ", "resp", ",", " ", 
+                          "toks"}], "]"}], ";", "\n", "            ", RowBox[
+                          {"next", " ", "=", " ", RowBox[{"toks", "@", RowBox[
+                          {"\"Read\"", "[", "]"}]}]}], ";", "\n", 
+                          "            ", RowBox[{"handler", " ", "=", " ", 
+                          RowBox[{"Lookup", "[", RowBox[{"handlers", ",", 
+                          " ", RowBox[{"next", "[", "\"Token\"", "]"}]}], 
+                          "]"}]}], ";"}]}], "\n", "            ", "]"}], ";", 
+                          "\n", "          ", RowBox[{"mode", " ", "=", " ", 
+                          "\"RDP\""}], ";"}]}], "\n", "          ", "]"}]}], 
+                          "\n", "        ", "]"}], ";"}]}], "\n", "      ", 
+                          "]"}]}]}], "\n", "    ", "]"}]}], ";"}], "\n", 
+                 RowBox[{RowBox[{"parseStream", "~", "SetAttributes", "~", 
+                     "HoldFirst"}], ";"}]}], "CodeInput"]}, Open]], 
+           Cell[CellGroupData[{Cell["\[LeftCeiling]ParseStream\[RightFloor]", 
                "CodeSubsubsubsection", Evaluatable -> True], Cell[BoxData[
                 RowBox[{RowBox[{"ParseStream", "[", RowBox[{"parser_", ",", 
                       " ", "stream_"}], "]"}], ":=", "\n", "  ", 
@@ -368,44 +790,48 @@ object can be returned.\n\[RightFloor]", "Text", Evaluatable -> True],
                           {"parser", "[", "\"Handlers\"", "]"}]}], ",", "\n", 
                           "      ", RowBox[{"ast", " ", "=", " ", RowBox[
                           {"ASTObject", "[", "]"}]}], ",", "\n", "      ", 
-                          "state", ",", "\n", "      ", "current", ",", "\n", 
-                          "      ", "blockType", ",", "\n", "      ", "data", 
-                          ",", "\n", "      ", "next", ",", "\n", "      ", 
-                          "handler", ",", "\n", "      ", RowBox[{"stack", 
-                          " ", "=", " ", RowBox[{"{", "}"}]}], ",", "\n", 
-                          "      ", "prec", ",", "\n", "      ", "resp"}], 
-                        "\n", "      ", "}"}], ",", "\n", "    ", RowBox[
-                       {"Internal`WithLocalSettings", "[", "\n", "      ", 
-                        RowBox[{"None", ",", "\n", "      ", RowBox[
-                          {RowBox[{RowBox[{"state", "[", "\"CurrentNode\"", 
-                          "]"}], " ", "=", " ", RowBox[{"ast", "[", 
-                          "\"Tree\"", "]"}]}], ";", "\n", "      ", RowBox[
-                          {RowBox[{"state", "[", "\"BlockType\"", "]"}], " ", 
-                          "=", " ", "\"Infinite\""}], ";", "\n", "      ", 
-                          RowBox[{RowBox[{"state", "[", "\"Precedence\"", 
-                          "]"}], " ", "=", " ", "0"}], ";", "\n", "      ", 
-                          RowBox[{"parseExpression", "[", RowBox[{RowBox[
-                          {"{", RowBox[{"state", ",", " ", "stack"}], "}"}], 
-                          ",", " ", "handlers", ",", " ", "toks"}], "]"}]}], 
-                          ",", "\n", "      ", RowBox[{"{", "\n", "        ", 
-                          RowBox[{"stack", ",", "\n", "  ", "      ", RowBox[
+                          RowBox[{"state", " ", "=", " ", RowBox[{"<|", 
+                          "|>"}]}], ",", "\n", "      ", "current", ",", 
+                          "\n", "      ", "blockType", ",", "\n", "      ", 
+                          "data", ",", "\n", "      ", "next", ",", "\n", 
+                          "      ", "handler", ",", "\n", "      ", RowBox[
+                          {"stack", " ", "=", " ", RowBox[{"{", "}"}]}], ",", 
+                          "\n", "      ", "prec", ",", "\n", "      ", 
+                          "resp"}], "\n", "      ", "}"}], ",", "\n", "    ", 
+                      RowBox[{"Internal`WithLocalSettings", "[", "\n", 
+                        "      ", RowBox[{"None", ",", "\n", "      ", 
+                          RowBox[{RowBox[{RowBox[{"state", "[", 
+                          "\"CurrentNode\"", "]"}], " ", "=", " ", RowBox[
+                          {"ast", "[", "\"Tree\"", "]"}]}], ";", "\n", 
+                          "      ", RowBox[{RowBox[{"state", "[", 
+                          "\"BlockType\"", "]"}], " ", "=", " ", 
+                          "\"Infinite\""}], ";", "\n", "      ", RowBox[
+                          {RowBox[{"state", "[", "\"Precedence\"", "]"}], 
+                          " ", "=", " ", RowBox[{"-", "Infinity"}]}], ";", 
+                          "\n", "      ", RowBox[{"parseStream", "[", RowBox[
+                          {RowBox[{"{", RowBox[{"stack", ",", " ", "state", 
+                          ",", " ", "handlers"}], "}"}], ",", " ", RowBox[
+                          {"TokenStreamer", "@", "toks"}]}], "]"}], ";", 
+                          "\n", "      ", RowBox[{"{", "\n", "        ", 
+                          RowBox[{"stack", ",", "\n", "        ", RowBox[
                           {"InterfaceModify", "[", RowBox[{"ASTObject", ",", 
                           " ", "ast", ",", " ", RowBox[{RowBox[
                           {"ReplacePart", "[", RowBox[{"#", ",", " ", RowBox[
-                          {"\"Tree\"", "\[Rule]", "current"}]}], "]"}], 
-                          "&"}]}], "]"}]}], "\n", "        ", "}"}], ",", 
-                          "\n", "      ", RowBox[{"If", "[", RowBox[
-                          {RowBox[{"StringQ", "@", "stream"}], ",", " ", 
-                          RowBox[{"toks", "@", RowBox[{"\"Close\"", "[", 
-                          "]"}]}]}], "]"}]}], "\n", "      ", "]"}]}], "\n", 
-                    "    ", "]"}]}]], "CodeInput"], Cell[BoxData[
-                RowBox[{RowBox[{"ApplyParser", "[", RowBox[{"parser_", ",", 
-                      " ", "stream_"}], "]"}], ":=", "\n", "  ", 
-                  RowBox[{"Module", "[", RowBox[{RowBox[{"{", RowBox[
-                         {"stack", ",", " ", "ast"}], "}"}], ",", "\n", 
-                      "    ", RowBox[{RowBox[{RowBox[{"{", RowBox[{"stack", 
-                          ",", " ", "ast"}], "}"}], "=", "\n", "      ", 
-                          RowBox[{"Block", "[", RowBox[{RowBox[{"{", RowBox[
+                          {"\"Tree\"", "\[Rule]", RowBox[{"state", "[", 
+                          "\"CurrentNode\"", "]"}]}]}], "]"}], "&"}]}], 
+                          "]"}]}], "\n", "        ", "}"}]}], ",", "\n", 
+                          "      ", RowBox[{"If", "[", RowBox[{RowBox[
+                          {"StringQ", "@", "stream"}], ",", " ", RowBox[
+                          {"toks", "@", RowBox[{"\"Close\"", "[", "]"}]}]}], 
+                          "]"}]}], "\n", "      ", "]"}]}], "\n", "    ", 
+                    "]"}]}]], "CodeInput"], Cell[BoxData[RowBox[
+                 {RowBox[{"ApplyParser", "[", RowBox[{"parser_", ",", " ", 
+                      "stream_"}], "]"}], ":=", "\n", "  ", RowBox[
+                   {"Module", "[", RowBox[{RowBox[{"{", RowBox[{"stack", ",", 
+                          " ", "ast"}], "}"}], ",", "\n", "    ", RowBox[
+                       {RowBox[{RowBox[{"{", RowBox[{"stack", ",", " ", 
+                          "ast"}], "}"}], "=", "\n", "      ", RowBox[
+                          {"Block", "[", RowBox[{RowBox[{"{", RowBox[
                           {"LexerToken", " ", "=", " ", 
                           "ConstructLexToken"}], "}"}], ",", " ", RowBox[
                           {"ParseStream", "[", RowBox[{"parser", ",", " ", 

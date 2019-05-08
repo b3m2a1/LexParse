@@ -20,32 +20,59 @@ Begin["`Private`"];
 
 
 
-normalizeTokenHandler[{a_String, b_String}]:=
+normalizeTokenHandler//Clear
+
+
+normalizeTokenHandler[{a_String, b_String, ops___?OptionQ}]:=
   {
     Join[
       normalizeTokenHandler[a],
       <|
         "TokenType"->"BlockOpener",
-        "BlockType"->{"Delimited", a, b}
+        "BlockType"->{"Delimited", {a, b}},
+        ops
         |>
       ],
     Join[
       normalizeTokenHandler[b],
       <|
-        "TokenType"->"BlockCloser"
+        "TokenType"->"BlockCloser",
+        ops
         |>
       ]
     }
 
 
-normalizeTokenHandler[{a_String, n_Integer}]:=
+normalizeTokenHandler[{a_String, n_Integer, ops___?OptionQ}]:=
   Join[
       normalizeTokenHandler[a],
       <|
         "TokenType"->"BlockOpener",
-        "BlockType"->{"FixedLength", n}
+        "BlockType"->{"FixedLength", n},
+        ops
         |>
       ];
+normalizeTokenHandler[{a_String, b__String, ops___?OptionQ}]:=
+  Join[
+      normalizeTokenHandler[a],
+      <|
+        "TokenType"->"BlockOpener",
+        "BlockType"->{"Structured", {a, b}},
+        ops
+        |>
+      ];
+
+
+normalizeTokenHandler[{Verbatim[_], op_String, Verbatim[_], ops___?OptionQ}]:=
+  Join[
+      normalizeTokenHandler[op],
+      <|
+        "TokenType"->"Operator",
+        "BlockType"->"Operator",
+        "Precedence"->0,
+        ops
+        |>
+      ]
 
 
 normalizeTokenHandler[a_String]:=
@@ -66,6 +93,13 @@ normalizeTokenHandler[a_Association]:=
       |>,
     a
     ];
+
+
+normalizeTokenHandler[e_]:=
+  PackageRaiseException[Automatic,
+    "Couldn't normalize token handler ``",
+    e
+    ]
 
 
 (* ::Subsubsubsection::Closed:: *)
@@ -136,15 +170,15 @@ Like a.b.c.e + g.f.g.h should be Plus[Dot[a, b, c, e], Dot[g, f, g, h] but the n
 
 
 handleToken//Clear
-handleToken[spec_, next_, node_, blockType_]:=
+handleToken[spec_, next_, state_]:=
   Replace[spec["TokenType"],
     {
       "BlockOpener":>
         openNode[spec, next],
       "BlockCloser":>
-        closeNode[spec, next, node, blockType],
+        closeNode[spec, next, state],
       "Atomic":>
-        closeNode[spec, next, node, blockType]
+        closeNode[spec, next, state]
       }
     ]
 
@@ -154,19 +188,46 @@ handleToken[spec_, next_, node_, blockType_]:=
 
 
 
-openNode[spec_, next_]:=
+openNode[spec_, next_, prepNode:True|False:True]:=
   <|
     "Node"->
-      MakeASTNode[
-        If[spec["TokenType"]===Automatic, Automatic, "Compound"], 
-        spec["DataFunction"]@next,
-        next["Token"]
+      If[prepNode,
+        MakeASTNode[
+          If[spec["TokenType"]===Automatic, Automatic, "Compound"], 
+          spec["DataFunction"]@next,
+          next["Token"]
+          ],
+        next
         ],
+    "Precedence"->Lookup[spec, "Precedence", -Infinity],
     "BlockType"->
       spec["BlockType"],
     "ResponseType"->
       "OpenNode"
-    |>
+    |>;
+
+
+(* ::Subsubsubsection::Closed:: *)
+(*structuredNodeMatchQ*)
+
+
+
+structuredNodeMatchQ[nodes_, blocks_]:=
+  Block[{},
+    MapThread[
+      If[#["Token"]=!=#2,
+        PackageRaiseException[Automatic,
+          "Got unexpected token ``", 
+          #2
+          ]
+        ]&,
+      {
+        nodes,
+        blocks[[;;Length@nodes]]
+        }
+      ];
+    Length@blocks==Length@nodes
+    ]
 
 
 (* ::Subsubsubsection::Closed:: *)
@@ -182,19 +243,37 @@ openNode[spec_, next_]:=
 
 
 closeNode//Clear
-closeNode[spec_, next_, node_, bt:{"Delimited", start_, end_}]:=
+closeNode[spec_, next_, node_, bt:{"Delimited", {start_, end_}}]:=
   <|
     "Node"->
       AddASTNodeData[node, 
         MakeASTNode["Atomic", spec["DataFunction"]@next, next["Token"]]
         ],
     "BlockType"->bt,
+    "Precedence"->Lookup[spec, "Precedence", -Infinity],
     "ResponseType"->
       If[spec["Token"]=!=end,
         "EditNode",
         "CloseNode"
         ]
     |>;
+closeNode[spec_, next_, node_, bt:{"Structured", blocks:{__}}]:=
+  Module[{main},
+    main=
+      AddASTNodeData[node, 
+        MakeASTNode["Atomic", spec["DataFunction"]@next, next["Token"]]
+        ];
+    <|
+      "Node"->main,
+      "BlockType"->bt,
+      "Precedence"->Lookup[spec, "Precedence", -Infinity],
+      "ResponseType"->
+        If[structuredNodeMatchQ[main["Children"], blocks],
+          "EditNode",
+          "CloseNode"
+          ]
+      |>
+    ];
 closeNode[spec_, next_, node_, bt:{"FixedLength", n_}]:=
   <|
     "Node"->
@@ -202,6 +281,7 @@ closeNode[spec_, next_, node_, bt:{"FixedLength", n_}]:=
         MakeASTNode["Atomic", spec["DataFunction"]@next, next["Token"]]
         ],
     "BlockType"->bt,
+    "Precedence"->Lookup[spec, "Precedence", -Infinity],
     "ResponseType"->
       If[GetASTNodeProperty[node, "ChildCount"]<n-1,
         "EditNode",
@@ -214,11 +294,76 @@ closeNode[spec_, next_, node_, bt:"Infinite"]:=
       AddASTNodeData[node, 
         MakeASTNode["Atomic", spec["DataFunction"]@next, next["Token"]]
         ],
+    "Precedence"->Lookup[spec, "Precedence", -Infinity],
     "BlockType"->node["BlockType"],
     "ResponseType"->"EditNode"
     |>;
+closeNode[spec_, next_, node_, bt:"Current"]:=
+  <|
+    "Node"->node,
+    "Precedence"->Lookup[spec, "Precedence", -Infinity],
+    "BlockType"->node["BlockType"],
+    "ResponseType"->"CloseNode"
+    |>
+closeNode[spec_, next_, node_, bt:"Operator"]:=
+  <|
+    "Node"->
+      AddASTNodeData[node, 
+        spec["DataFunction"]@next
+        ],
+    "Precedence"->Lookup[spec, "Precedence", 0],
+    "BlockType"->node["BlockType"],
+    "ResponseType"->"EditNode"
+    |>
 closeNode[spec_, next_, node_, e_]:=
-  PackageRaiseException[Automatic, "Invalid block type: ``", e]
+  PackageRaiseException[Automatic, "Invalid block type: ``", e];
+closeNode[spec_, next_, state_]:=
+  closeNode[spec, next, state["CurrentNode"], state["BlockType"]];
+
+
+(* ::Subsubsubsection::Closed:: *)
+(*closeOpenNode*)
+
+
+
+closeOpenNode[spec_, next_, state_]:=
+  Module[{closed=closeNode[spec, next, state]},
+    <|
+      "Node"->
+        MakeASTNode[
+          "Compound", 
+          {closed["Node"]},
+          next["Token"]
+          ],
+      "Precedence"->spec["Precedence"],
+      "BlockType"->spec["BlockType"],
+      "ResponseType"->"EditNode"
+      |>
+    ]
+
+
+(* ::Subsubsubsection::Closed:: *)
+(*handleOperator*)
+
+
+
+handleOperator[spec_, next_, state_]:=
+  Which[
+    state["Precedence"]<spec["Precedence"],
+      (* the next node has a higher precedence than the current node so we simply open a new node *)
+      openNode[spec, next],
+    state["Precedence"]==spec["Precedence"],
+      (* 
+                the next node has a equal precedence to the current node so we close off the current one 
+                  and open a new one with the current one as an argument
+             *)
+      closeOpenNode[spec, next, state],
+    True,
+      (* 
+                the next node has a lower precedence than the current node... but operationally it's like equal for now
+               *)
+      closeOpenNode[spec, next, state]
+    ]
 
 
 (* ::Subsubsection::Closed:: *)
@@ -226,8 +371,66 @@ closeNode[spec_, next_, node_, e_]:=
 
 
 
+(* ::Text:: *)
+(*
+	We\[CloseCurlyQuote]re gonna have a two layer parser, with a standard recursive descent parser which dumps into an operator-precedence parser when necessary and then that calls back into the recursive descent parser
+	An example of how this could work:
+	
+	for ( int i = 0; i<10; i++ ) { ...
+	
+	1: Tokenizer returns {\[OpenCurlyDoubleQuote]\[CloseCurlyDoubleQuote], \[OpenCurlyDoubleQuote]for\[CloseCurlyDoubleQuote]}
+		recursive-descent parser sees for: opens Node0({\[OpenCurlyDoubleQuote]\[CloseCurlyDoubleQuote]}, \[OpenCurlyDoubleQuote]for\[CloseCurlyDoubleQuote]);
+	2: Tokenizer returns {\[OpenCurlyDoubleQuote] \[CloseCurlyDoubleQuote], \[OpenCurlyDoubleQuote](\[CloseCurlyDoubleQuote]}
+		RDP sees \[OpenCurlyDoubleQuote](\[OpenCurlyDoubleQuote]: pushes Node0 onto RDP stack; opens Node1({\[OpenCurlyDoubleQuote] \[OpenCurlyDoubleQuote]}, \[OpenCurlyDoubleQuote](\[OpenCurlyDoubleQuote]);
+	3: Tokenizer returns {\[OpenCurlyDoubleQuote]int i\[CloseCurlyDoubleQuote], \[OpenCurlyDoubleQuote]=\[CloseCurlyDoubleQuote]}
+		RDP sees \[OpenCurlyDoubleQuote]=\[CloseCurlyDoubleQuote], an infix operator: enters operator-precedence parser
+		OPP opens Node2({\[OpenCurlyDoubleQuote]int i\[CloseCurlyDoubleQuote]}, \[OpenCurlyDoubleQuote]=\[CloseCurlyDoubleQuote])
+		4: Tokenizer returns {\[OpenCurlyDoubleQuote]0\[CloseCurlyDoubleQuote], \[OpenCurlyDoubleQuote];\[CloseCurlyDoubleQuote]}
+			OPP sees \[OpenCurlyDoubleQuote];\[CloseCurlyDoubleQuote] which is infix with lower precedence:
+			 	inserts \[OpenCurlyDoubleQuote]0\[CloseCurlyDoubleQuote] into Node2; closes Node2 and opens Node3({Node2}, \[OpenCurlyDoubleQuote];\[CloseCurlyDoubleQuote]);
+		5: Tokenizer returns {\[OpenCurlyDoubleQuote] i\[CloseCurlyDoubleQuote], \[OpenCurlyDoubleQuote]<\[CloseCurlyDoubleQuote]}
+		 	OPP sees \[OpenCurlyDoubleQuote]<\[CloseCurlyDoubleQuote] which is infix with higher precedence:
+		 		pushes Node3 onto OPP stack; opens Node4({\[OpenCurlyDoubleQuote] i\[CloseCurlyDoubleQuote]}, \[OpenCurlyDoubleQuote]<\[CloseCurlyDoubleQuote])
+		 6: Tokenizer returns {\[OpenCurlyDoubleQuote]10\[CloseCurlyDoubleQuote], \[OpenCurlyDoubleQuote];\[CloseCurlyDoubleQuote]}
+		 	OPP sees \[OpenCurlyDoubleQuote];\[CloseCurlyDoubleQuote] which is infix with lower precedence:
+				inserts \[OpenCurlyDoubleQuote]10\[CloseCurlyDoubleQuote] into Node4; closes Node4 and inserts Node4 into Node3;
+				\[OpenCurlyDoubleQuote];\[CloseCurlyDoubleQuote] has same precedence as Node3; closes Node3 and opens Node5({Node3}, \[OpenCurlyDoubleQuote];\[CloseCurlyDoubleQuote])
+		7: Tokenizer returns {\[OpenCurlyDoubleQuote] i\[CloseCurlyDoubleQuote], \[OpenCurlyDoubleQuote]++\[CloseCurlyDoubleQuote]}
+			OPP sees \[OpenCurlyDoubleQuote]++\[CloseCurlyDoubleQuote] which is not an infix operator and higher precedence than \[OpenCurlyDoubleQuote];\[CloseCurlyDoubleQuote]
+				inserts Node6({\[OpenCurlyDoubleQuote] i\[CloseCurlyDoubleQuote]}, \[OpenCurlyDoubleQuote]++\[CloseCurlyDoubleQuote]) into Node5
+		8: Tokenizer returns {\[OpenCurlyDoubleQuote] \[CloseCurlyDoubleQuote], \[OpenCurlyDoubleQuote])\[CloseCurlyDoubleQuote]}
+			OPP sees \[OpenCurlyDoubleQuote])\[CloseCurlyDoubleQuote] which is not and infix operator and lower equal precedence to \[OpenCurlyDoubleQuote];\[CloseCurlyDoubleQuote]
+				closes Node6 and inserts into Node1
+				exits OPP
+		RDP sees \[OpenCurlyDoubleQuote])\[CloseCurlyDoubleQuote]: matches closer for Node1 and so closes Node1
+	9: Tokenizer returns \[OpenCurlyDoubleQuote]{\[OpenCurlyDoubleQuote] ...
+
+Another example would be
+	
+	i+2*5^(x+10)
+	
+	1: Tokenizer returns {\[OpenCurlyDoubleQuote]i\[CloseCurlyDoubleQuote], \[OpenCurlyDoubleQuote]+\[CloseCurlyDoubleQuote]}
+		RDP sees \[OpenCurlyDoubleQuote]+\[CloseCurlyDoubleQuote]: enters ODP
+		OPD sees \[OpenCurlyDoubleQuote]+\[CloseCurlyDoubleQuote]: opens Node0({\[OpenCurlyDoubleQuote]i\[CloseCurlyDoubleQuote]}, \[OpenCurlyDoubleQuote]+\[CloseCurlyDoubleQuote])
+		2: Tokenizer returns {\[OpenCurlyDoubleQuote]2\[CloseCurlyDoubleQuote], \[OpenCurlyDoubleQuote]*\[CloseCurlyDoubleQuote]}
+			ODP sees \[OpenCurlyDoubleQuote]*\[CloseCurlyDoubleQuote] which is a higher precedence operator than \[OpenCurlyDoubleQuote]+\[CloseCurlyDoubleQuote]:
+				opens Node1({\[OpenCurlyDoubleQuote]2\[CloseCurlyDoubleQuote]}, \[OpenCurlyDoubleQuote]*\[CloseCurlyDoubleQuote])
+		3: Tokenizer returns {\[OpenCurlyDoubleQuote]5\[CloseCurlyDoubleQuote], \[OpenCurlyDoubleQuote]^\[CloseCurlyDoubleQuote]}
+			ODP sees \[OpenCurlyDoubleQuote]^\[CloseCurlyDoubleQuote] which is a higher precedence operator than \[OpenCurlyDoubleQuote]+\[OpenCurlyDoubleQuote]:
+				opens Node2({\[OpenCurlyDoubleQuote]5\[CloseCurlyDoubleQuote]}, \[OpenCurlyDoubleQuote]*\[CloseCurlyDoubleQuote])
+		4: Tokenizer returns {\[OpenCurlyDoubleQuote]\[CloseCurlyDoubleQuote], \[OpenCurlyDoubleQuote](\[CloseCurlyDoubleQuote]}:
+			ODP sees this neither an infix operator nor a right-associative operator: enters RDP
+			RDP sees \[OpenCurlyDoubleQuote](\[OpenCurlyDoubleQuote]: opens Node3({\[OpenCurlyDoubleQuote]\[CloseCurlyDoubleQuote]}, \[OpenCurlyDoubleQuote](\[CloseCurlyDoubleQuote])
+			5: Tokenizer returns  {\[OpenCurlyDoubleQuote]x\[CloseCurlyDoubleQuote], \[OpenCurlyDoubleQuote]+\[OpenCurlyDoubleQuote]}:
+				RDP sees \[OpenCurlyDoubleQuote]+\[OpenCurlyDoubleQuote]: enters ODP
+				OPD sees \[OpenCurlyDoubleQuote]+\[OpenCurlyDoubleQuote]: opens Node4({\[OpenCurlyDoubleQuote]x\[CloseCurlyDoubleQuote]}, \[OpenCurlyDoubleQuote]+\[OpenCurlyDoubleQuote])
+			...	
+*)
+
+
+
 (* ::Subsubsubsection::Closed:: *)
-(*stack*)
+(*exprStack*)
 
 
 
@@ -238,16 +441,19 @@ closeNode[spec_, next_, node_, e_]:=
 
 
 
-stack[]:=
+exprStack[]:=
   With[{s=Unique[stackVar]}, 
+    SetAttributes[s, Temporary];
     s = {};
-    stack[s]
+    exprStack[s]
     ];
-stack[s_]@"Push"[val_]:=
+exprStack[s_]@"Push"[val_]:=
   (AppendTo[s, val];s[[-1]]);
-stack[s_]@"Pop"[]:=
-  AppendTo[s, val];s[[-1]]
-stack~SetAttributes~HoldFirst;
+exprStack[s_]@"Pop"[]:=
+  With[{old=s[[-1]]}, s=s[[;;-2]]; old];
+exprStack[s_]@"Size"[]:=
+  Length[s];
+exprStack~SetAttributes~HoldFirst;
 
 
 (* ::Subsubsubsection::Closed:: *)
@@ -273,51 +479,113 @@ continueParse[handler_, next_]:=
 
 
 manageResponse[{stack_, state_}, resp_, toks_]:=
-  Switch[resp["ResponseType"],
+  imanageResponse[{stack, state}, resp["ResponseType"], resp, toks];
+manageResponse~SetAttributes~HoldFirst;
+
+
+imanageResponse[{stack_, state_}, type_, resp_, toks_]:=
+  Switch[type,
     "OpenNode",
       AppendTo[stack, state];
       state["CurrentNode"] = resp["Node"];
-      state["BlockType"] = resp["BlockType"],
+      state["BlockType"] = resp["BlockType"];
+      state["Precedence"] = resp["Precedence"];,
     "EditNode",
       state["CurrentNode"] = resp["Node"],
     "CloseNode",
       state = stack[[-1]];
       stack = stack[[;;-2]];
-      state["CurrentNode"] = AddASTNodeData[state["CurrentNode"], resp["Node"]]
+      state["CurrentNode"] = AddASTNodeData[state["CurrentNode"], resp["Node"]],
+    "ReturnNode", 
+      (* much like closing a node, but rather than inserting it into its parent we simply set the node state *)
+      state = stack[[-1]];
+      stack = stack[[;;-2]];
+      state["CurrentNode"] = resp["Node"],
+    _List,
+      MapThread[
+        imanageResponse[{stack, state}, #, #2, toks]&,
+        {
+          type,
+          resp["Responses"]
+          }
+        ]
     ];
-manageResponse~SetAttributes~HoldFirst;
+imanageResponse~SetAttributes~HoldFirst;
 
 
 (* ::Subsubsubsection::Closed:: *)
-(*parseExpression*)
+(*useODP*)
 
 
 
-(* ::Text:: *)
-(*
-	This implements our precedence parser. Not elegant but will hopefully get the job done. Presumably each \[OpenCurlyDoubleQuote]Read\[CloseCurlyDoubleQuote] call can be optimized or a faster, less-safe \[OpenCurlyDoubleQuote]Reader\[CloseCurlyDoubleQuote] object can be returned.
-*)
+useODP[handler_, next_]:=
+  TrueQ[handler["TokenType"]=="Operator"];
+
+
+(* ::Subsubsubsection::Closed:: *)
+(*handleExitODP*)
 
 
 
-parseExpression[{state_, stack_}, handlers_, toks_]:=
-  Module[{next, handler, resp, op},
-    next = toks@"Peek"[];
+handleExitODP[{stack_, state_}, handler_, next_]:=
+  Switch[handler["TokenType"],
+    "BlockOpener",
+      None,
+    "BlockCloser",
+      closeNode[handler, next, state],
+    _,
+      With[
+        {r1=closeOpenNode[handler, next, state]},
+        <|
+          "Responses"->{r1, closeNode[handler, next, r1["Node"], "Current"]},
+          "ResponseType"->{
+            r1["ResponseType"],
+            "CloseNode"
+            }
+          |>
+        ]
+    ]
+
+
+(* ::Subsubsubsection::Closed:: *)
+(*parseStream*)
+
+
+
+parseStream[{stack_, state_, handlers_}, toks_]:=
+  Module[
+    {
+      next, handler, resp,
+      mode = "RDP"
+      },
+    next = toks@"Read"[];
     handler = Lookup[handlers, next["Token"]];
     While[continueParse[handler, next],
-      If[handler["Arity"]==2&&handler["Precedence"]>0,
-        While[descendPrecedence[],
-          op = next;
-          toks@"Skip"[];
+      If[mode==="RDP",
+        If[!useODP[handler, next],
+          resp = handleToken[handler, next, state];
+          manageResponse[{stack, state}, resp, toks];
+          next = toks@"Read"[];
+          handler = Lookup[handlers, next["Token"]];,
+          mode = "ODP"
           ],
-        resp = handleToken[handler, next, state];
-        manageResponse[{state, stack}, resp, toks];
+        If[useODP[handler, next],
+          resp = handleOperator[handler, next, state];
+          manageResponse[{stack, state}, resp, toks];
+          next = toks@"Read"[];
+          handler = Lookup[handlers, next["Token"]];,
+          resp = handleExitODP[{stack, state}, handler, next];
+          If[resp=!=None, 
+            manageResponse[{stack, state}, resp, toks];
+            next = toks@"Read"[];
+            handler = Lookup[handlers, next["Token"]];
+            ];
+          mode = "RDP";
+          ]
         ];
-      next = toks@"Read"[];
-      handler = Lookup[handlers, next["Token"]];
       ]
     ];
-parseExpression~SetAttributes~HoldFirst;
+parseStream~SetAttributes~HoldFirst;
 
 
 (* ::Subsubsubsection::Closed:: *)
@@ -331,7 +599,7 @@ ParseStream[parser_, stream_]:=
       toks = parser["Lexer"]@"TokenStream"[stream],
       handlers = parser["Handlers"],
       ast = ASTObject[],
-      state,
+      state = <||>,
       current,
       blockType,
       data,
@@ -345,11 +613,11 @@ ParseStream[parser_, stream_]:=
       None,
       state["CurrentNode"] = ast["Tree"];
       state["BlockType"] = "Infinite";
-      state["Precedence"] = 0;
-      parseExpression[{state, stack}, handlers, toks],
+      state["Precedence"] = -Infinity;
+      parseStream[{stack, state, handlers}, TokenStreamer@toks];
       {
         stack,
-        InterfaceModify[ASTObject, ast, ReplacePart[#, "Tree"->current]&]
+        InterfaceModify[ASTObject, ast, ReplacePart[#, "Tree"->state["CurrentNode"]]&]
         },
       If[StringQ@stream, toks@"Close"[]]
       ]

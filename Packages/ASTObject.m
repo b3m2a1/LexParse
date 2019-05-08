@@ -14,10 +14,13 @@ RegisterInterface[
   "Constructor"->ConstructASTObject,
   "AccessorFunctions"->
     <|
-      "Keys"->Automatic, 
+      "Keys"->getKey, 
       "Parts"->GetASTNode
       |>
   ]
+
+
+getKey[ASTObject[a_], k_]:=a[k]
 
 
 End[];
