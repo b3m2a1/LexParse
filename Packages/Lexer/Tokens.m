@@ -155,10 +155,10 @@ readStringToken[tok_, escape_:"\\"][stream_, body_, token_]:=
   Module[
     {
       tmp,
-      str = Read[stream, Record, RecordSeparators->{tok}]
+      str = Read[stream, Record, RecordSeparators->{tok}, NullRecords->True]
       },
     While[StringQ[str]&&StringEndsQ[str, escape],
-      tmp = Read[stream, Record, RecordSeparators->{tok}];
+      tmp = Read[stream, Record, RecordSeparators->{tok}, NullRecords->True];
       If[tmp===EndOfFile, Break[]];
       str = str<>tok<>tmp;
       ];
@@ -208,53 +208,69 @@ TokenStreamerRead[TokenStreamer[{t_, stream_, handlers_, seps_, tokPuller_}], n_
     Table[
       token = $Failed;
       body = EndOfFile;
-      While[token===$Failed,
-        If[StreamPosition[stream]==0,
-          (* 
-                      we need a secondary handling mechanism to ensure
-                        that we don't miss tokens at the very start of the stream
-                      *)
-          tmp = 
-           Read[stream, Record,
-              RecordSeparators->seps
+      Block[{}, (* just building a Return point *)
+        While[token===$Failed,
+          If[StreamPosition[stream]==0,
+            (* 
+                        we need a secondary handling mechanism to ensure
+                          that we don't miss tokens at the very start of the stream
+                        *)
+            tmp = 
+             Read[stream, Record,
+                RecordSeparators->seps,
+                NullRecords->True
+                ];
+            (* if we're at the end of the stream just bail *)
+            If[tmp===EndOfFile,
+              Return[
+                handlers[EndOfFile][
+                  t,
+                  EndOfFile,
+                  EndOfFile
+                  ],
+                Block
+                ]
               ];
-          spos = StreamPosition[stream];
-          If[StringLength@tmp<spos (* we skipped a thing *),
-            SetStreamPosition[stream, 0];
-            token = tokPuller[stream];
-            If[ListQ@token, 
-              body = token[[2]];
-              token = token[[1]],
-              body = "";
-              ]
-            ],
-          (* standard mechanism a little bit simpler *)
-          tmp = 
-           Read[stream, Record,
-              RecordSeparators->seps
-              ];
-          If[tmp===EndOfFile, 
-            Return[
-              handlers[EndOfFile][
-                t,
-                If[StringQ@body, body, EndOfFile],
-                EndOfFile
-                ],
-              While
+            spos = StreamPosition[stream];
+            If[StringLength@tmp<spos (* we skipped a thing *),
+              SetStreamPosition[stream, 0];
+              token = tokPuller[stream];
+              If[ListQ@token, 
+                body = token[[2]];
+                token = token[[1]],
+                body = "";
+                ]
               ],
-            token = tokPuller[stream];
-            If[ListQ@token, 
-              tmp = tmp <> token[[2]];
-              token = token[[1]];
-              ]
-            ];
-          body = If[StringQ@body, body<>tmp, tmp]
+            (* standard mechanism a little bit simpler *)
+            tmp = 
+             Read[stream, Record,
+                RecordSeparators->seps,
+                NullRecords->True
+                ];
+            (* if we're at the end of the stream, again, just bail *)
+            If[tmp===EndOfFile, 
+              Return[
+                handlers[EndOfFile][
+                  t,
+                  If[StringQ@body, body, EndOfFile],
+                  EndOfFile
+                  ],
+                Block
+                ],
+              token = tokPuller[stream];
+              If[ListQ@token, 
+                tmp = tmp <> token[[2]];
+                token = token[[1]];
+                ]
+              ];
+            body = If[StringQ@body, body<>tmp, tmp]
+            ]
+          ];
+        handlers[token][
+          t,
+          body,
+          token
           ]
-        ];
-      handlers[token][
-        t,
-        body,
-        token
         ],
       n
       ]
@@ -291,6 +307,66 @@ TokenStreamerRead[TokenStreamer[{t_, stream_, handlers_, seps_, tokPuller_}], n_
 
 
 (* ::Subsubsubsection::Closed:: *)
+(*tokenTrie*)
+
+
+
+(* ::Text:: *)
+(*
+	Need some little trie functionality to optimize this token pulling
+*)
+
+
+
+addDefTok[assoc_, cur_:""]:=
+  AssociationMap[
+    With[{cur1=cur<>#[[1]]},
+      #[[1]]->
+        Map[
+          If[AssociationQ[#], addDefTok[#, cur1], #]&,
+          If[AssociationQ@#[[2]], Append[#[[2]], Default->cur1], #[[2]]]
+          ]
+      ]&,
+    assoc
+    ];
+groupToks[strings_, pos_]:=
+  With[{longer=Select[strings, StringLength@#>=pos&]},
+    Which[
+      Length@strings==1,
+        strings[[1]],
+      Length@longer>0,
+        GroupBy[longer, StringTake[#, {pos}]&, groupToks[#, pos+1]&],
+      True,
+        strings[[1]]
+      ]
+    ];
+tokenTrie[strings_]:=
+  addDefTok@groupToks[strings, 1]
+
+
+getTokenViaTrie[stream_, trie_]:=
+  (* keep walking through the trie until we find what token was returned *)
+  Module[{c, t = trie, t2, i=1, sp = StreamPosition[stream]},
+    While[AssociationQ@t,
+      c = Read[stream, Character];
+      If[c===EndOfFile, t=EndOfFile;Break[]];
+      t2 = t[c];
+      If[StringQ@t2&&StringLength[t2]>i, 
+        Skip[stream, Character, StringLength[t2]-i]
+        ];
+      If[MissingQ@t2,  
+        t2 = t[Default];
+        SetStreamPosition[stream, sp+(i-1)]
+        ];
+      t = t2;
+      i++
+      ];
+    (*SetStreamPosition[stream, sp+1];*)
+    t
+    ]
+
+
+(* ::Subsubsubsection::Closed:: *)
 (*tokenPuller*)
 
 
@@ -306,13 +382,13 @@ TokenStreamerRead[TokenStreamer[{t_, stream_, handlers_, seps_, tokPuller_}], n_
 tokenPuller//Clear
 tokenPuller[tokens_]:=
   tokenPuller[
-    AssociationThread[tokens, None], 
+    tokenTrie[Select[tokens, StringQ]], 
     Min[StringLength/@Select[tokens, StringQ]]
     ];
 tokenPuller[tokSet_, min_][stream_]:=
   pullTokenToo[stream, tokSet, min];
 pullTokenToo//Clear
-pullTokenToo[stream_, tokSet_, minTok_]:=
+pullTokenToo[stream_, tokTrie_, minTok_]:=
   (* gotta figure out which token we actually got... *)
   Module[{tok, tmp, spos, spos2},
     spos = StreamPosition[stream];
@@ -323,32 +399,24 @@ pullTokenToo[stream_, tokSet_, minTok_]:=
         SetStreamPosition[stream, spos-1];
         If[!StringMatchQ[Read[stream, Character], WhitespaceCharacter],
           SetStreamPosition[stream, spos2];
-          Return[{$Failed, tok}, Module],
-          SetStreamPosition[stream, spos2]
+          Return[{$Failed, tok}, Module]
           ]
-        ]; 
-      tok = Prepend[tok]@ReadList[stream, Character, minTok-1],
-      tok = ReadList[stream, Character, minTok];
+        ];
+      SetStreamPosition[stream, spos];
       ];
-    If[AllTrue[tok, StringQ],
-      tok = StringJoin[tok],
-      Return[EndOfFile, Module]
-      ];
-    While[!KeyExistsQ[tokSet, tok],
-      tmp = Read[stream, Character];
-      If[tmp===EndOfFile, Return[EndOfFile, Module]];
-      tok = tok<>tmp;
-      ];
-    
+    tok = getTokenViaTrie[stream, tokTrie];
+    If[tok === EndOfFile, Return[tok, Module]];
     If[StringMatchQ[StringTake[tok, {1}], WordCharacter],
        (* finally need to check that next char isn't another WordCharacter *)
-      spos2 = StreamPosition[stream];
       tmp = Read[stream, Character];
       If[StringQ@tmp&&StringMatchQ[tmp, WordCharacter],
         SetStreamPosition[stream, spos];
-        Return[{$Failed, tok}, Module],
-        SetStreamPosition[stream, spos2]
+        Return[{$Failed, tok}, Module]
         ]
+      ];
+    If[spos>0, 
+      SetStreamPosition[stream, spos],
+      SetStreamPosition[stream, spos+1]
       ];
     tok
     ]
@@ -375,64 +443,6 @@ tokenPeek[stream_, spec_, t_]:=
 (* ::Subsubsubsection::Closed:: *)
 (*tokenReadList*)
 
-
-
-(* ::Subsubsubsubsection::Closed:: *)
-(*old*)
-
-
-
-(* ::Text:: *)
-(*
-	Realized this won\[CloseCurlyQuote]t work as the Handler gets applied too late...
-*)
-
-
-
-otokenReadList[stream_, spec_, n_]:=
-  Module[
-    {
-      body, token, final, strPos,
-        handlers=spec["Handlers"], 
-        seps=spec["Characters"],
-        nullHandle, read
-        },
-    body = 
-      ReadList[stream, Record, n,
-        RecordSeparators->seps
-        ];
-    body = PadRight[body, n, EndOfFile];
-    final = Read[stream, Character];
-    strPos = Pick[Range[n], StringQ/@body];
-    If[Length@strPos < 2,
-      nullHandle = Lookup[handlers, EndOfFile, LexerToken];
-      Return[
-        Map[
-          nullHandle[
-            stream,
-            #,
-            EndOfFile
-            ]&,
-          body
-          ], 
-        Module
-        ]
-      ];
-    strPos = Rest@strPos;
-    token = StringTake[body[[strPos]], 1];
-    If[n-Max[strPos]>0,
-      token = Join[token, ConstantArray[EndOfFile, n-Max[strPos]]]
-      ];
-    token = Append[token, final];
-    MapThread[
-      #[stream, #2, #3]&,
-      {
-        Lookup[handlers, token, LexerToken],
-        body,
-        token
-        }
-      ]
-    ];
 
 
 (* ::Subsubsubsubsection::Closed:: *)

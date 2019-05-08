@@ -83,7 +83,7 @@ Notebook[{Cell[CellGroupData[{Cell["Parser", "CodeSection"],
                      {RowBox[{"\"Token\"", "\[Rule]", "a"}], ",", "\n", 
                       "    ", RowBox[{"\"TokenType\"", "\[Rule]", 
                         "\"Atomic\""}], ",", "\n", "    ", RowBox[
-                       {"\"BlockType\"", "\[Rule]", "\"Infinite\""}], ",", 
+                       {"\"BlockType\"", "\[Rule]", "\"Default\""}], ",", 
                       "\n", "    ", RowBox[{"\"DataFunction\"", "\[Rule]", 
                         RowBox[{"(", RowBox[{RowBox[{"#", "[", "\"Body\"", 
                           "]"}], "&"}], ")"}]}]}], "\n", "    ", "|>"}]}]], 
@@ -96,7 +96,7 @@ Notebook[{Cell[CellGroupData[{Cell["Parser", "CodeSection"],
                           "&"}], ")"}]}], ",", "\n", "      ", RowBox[
                           {"\"TokenType\"", "\[Rule]", "\"Atomic\""}], ",", 
                           "\n", "      ", RowBox[{"\"BlockType\"", "\[Rule]", 
-                          "\"Infinite\""}]}], "\n", "      ", "|>"}], ",", 
+                          "\"Default\""}]}], "\n", "      ", "|>"}], ",", 
                         "\n", "    ", "a"}], "\n", "    ", "]"}]}], ";"}]], 
                "CodeInput"], Cell[BoxData[RowBox[{RowBox[
                    {"normalizeTokenHandler", "[", "e_", "]"}], ":=", "\n", 
@@ -320,7 +320,7 @@ patterns are defined...\n\[RightFloor]", "Text", Evaluatable -> True],
                        "\n", "    ", "|>"}]}], ";"}], "\n", RowBox[
                   {RowBox[{RowBox[{"closeNode", "[", RowBox[{"spec_", ",", 
                          " ", "next_", ",", " ", "node_", ",", " ", RowBox[
-                          {"bt", ":", "\"Infinite\""}]}], "]"}], ":=", "\n", 
+                          {"bt", ":", "\"Default\""}]}], "]"}], ":=", "\n", 
                      "  ", RowBox[{"<|", "\n", "    ", RowBox[{RowBox[
                           {"\"Node\"", "->", "\n", "      ", RowBox[
                           {"AddASTNodeData", "[", RowBox[{"node", ",", " ", 
@@ -805,7 +805,7 @@ we\[CloseCurlyQuote]ll call it inside the precedence parser.\n\[RightFloor]",
                           {"ast", "[", "\"Tree\"", "]"}]}], ";", "\n", 
                           "      ", RowBox[{RowBox[{"state", "[", 
                           "\"BlockType\"", "]"}], " ", "=", " ", 
-                          "\"Infinite\""}], ";", "\n", "      ", RowBox[
+                          "\"Default\""}], ";", "\n", "      ", RowBox[
                           {RowBox[{"state", "[", "\"Precedence\"", "]"}], 
                           " ", "=", " ", RowBox[{"-", "Infinity"}]}], ";", 
                           "\n", "      ", RowBox[{"parseStream", "[", RowBox[

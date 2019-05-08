@@ -7,6 +7,7 @@ EBNFSequence::usage="";
 EBNFAlternatives::usage="";
 EBNFOptional::usage="";
 EBNFRepeated::usage="";
+EBNFAny::usage="";
 
 
 BuildEBNFGrammar::usage="";
@@ -50,6 +51,7 @@ EBNFSequence[seq__];
 EBNFAlternatives[alts__];
 EBNFOptional[structure_, val_];
 EBNFRepeated[structure_];
+EBNFAny[];
 
 
 (* ::Subsubsubsection::Closed:: *)
@@ -57,18 +59,39 @@ EBNFRepeated[structure_];
 
 
 
+BuildEBNFGrammarValue//Clear
+
+
 normalizeSlots[a_]:=
   a/.Verbatim[Blank][s_Symbol]:>Blank[SymbolName[s]]
 
 
 BuildEBNFGrammarValue[Verbatim[Alternatives][a__]]:=
-  normalizeSlots@EBNFAlternatives[a];
+  BuildEBNFGrammarValue/@EBNFAlternatives[a]//normalizeSlots;
+
+
 BuildEBNFGrammarValue[Verbatim[Sequence][a__]]:=
-  normalizeSlots@EBNFSequence[a];
+  BuildEBNFGrammarValue/@EBNFSequence[a]//normalizeSlots;
+BuildEBNFGrammarValue[Verbatim[PatternSequence][a__]]:=
+  BuildEBNFGrammarValue[Sequence[a]];
+
+
 BuildEBNFGrammarValue[Verbatim[Repeated][a_]]:=
-  normalizeSlots@EBNFRepeated[a];
+  BuildEBNFGrammarValue/@EBNFRepeated[a]//normalizeSlots;
+
+
 BuildEBNFGrammarValue[Verbatim[Optional][a_, b_]]:=
-  normalizeSlots@EBNFOptional[a, b];
+  BuildEBNFGrammarValue/@EBNFOptional[a, b]//normalizeSlots;
+
+
+BuildEBNFGrammarValue[Verbatim[_]|Verbatim[__]|Verbatim[___]]:=
+  EBNFAny[];
+
+
+BuildEBNFGrammarValue[HoldPattern[v_]]:=BuildEBNFGrammarValue[v]
+BuildEBNFGrammarValue[e_]:=e;
+
+
 BuildEBNFGrammarValue~SetAttributes~{HoldAll, SequenceHold};
 
 
@@ -82,7 +105,7 @@ BuildEBNFGrammarSymbol[s:_Symbol]:=
 BuildEBNFGrammarSymbol[s:_String]:=
   {_s};
 BuildEBNFGrammarSymbol[{e_, ops___}]:=
-  {BuildEBNFGrammarSymbol[e], ops};
+  {BuildEBNFGrammarSymbol[e][[1]], ops};
 BuildEBNFGrammarSymbol[e_]:=
   {e};
 
@@ -94,7 +117,7 @@ BuildEBNFGrammarSymbol[e_]:=
 
 BuildEBNFGrammarRule[(Rule|RuleDelayed)[r_, v_]]:=
   With[{sym=BuildEBNFGrammarSymbol[r]},
-    EBNFRule[sym[[1]], BuildEBNFGrammarValue[v], Sequence@@Rest[sym]]
+    EBNFRule[sym[[1]], BuildEBNFGrammarValue[v], Rest[sym]]
     ];
 BuildEBNFGrammarRule[e_EBNFRule]:=
   e;
@@ -117,7 +140,8 @@ BuildEBNFGrammar[rules:{(_RuleDelayed|_Rule|_EBNFRule)..}]:=
           EBNFRule[
             grammarStructs[[All, 1]],
             grammarStructs[[All, 2]] //. 
-              Map[Verbatim[Replace[#[[1]], {l_, ___}:>l]]->#[[2]]&, grammarStructs]
+              Map[Verbatim[Replace[#[[1]], {l_, ___}:>l]]->#[[2]]&, grammarStructs],
+            grammarStructs[[All, 3]]
             ]
           ]
       |>
@@ -143,27 +167,54 @@ BuildEBNFGrammar[a_Association]:=
 
 
 
+$convertEBNFTokenRules=
+  Dispatch@
+    {
+      EBNFAlternatives[a___]:>
+        CollectEBNFTokens@{a},
+      EBNFSequence[e___]:>
+        CollectEBNFTokens@{e},
+      EBNFOptional[arg_]:>
+       stickyOptional[Value@CollectEBNFTokens[{arg}]],
+      EBNFRepeated[arg_]:>
+        repeatTokens[CollectEBNFTokens[{arg}], 10],
+      EBNFRule[
+        name_,
+        struct_,
+        ops___
+        ]:>({name[[1]], ops}->Flatten[CollectEBNFTokens@{struct}, 1]),
+      s_String:>s,
+      _->Nothing
+      };
+
+
 CollectEBNFTokens[e_EBNFGrammar]:=
   CollectEBNFTokens[e["Rules"]];
 CollectEBNFTokens[rules_List]:=
-  Replace[
-    rules,
-    {
-      EBNFRule[
-        _,
-        EBNFSequence[d1_, Verbatim[___]|Verbatim[__], d2_],
-        ops___
-        ]:>Sequence@@Map[{#, ops}&, {d1, d2}],
-      EBNFRule[_, 
-        EBNFSequence[head_String, ___], ops___]:>{head, ops},
-      EBNFRule[_, 
-        EBNFSequence[args__], ops___]:>{FirstCase[{args}, _String], ops},
-      EBNFRule[_, e_, ops___]:>{e, ops},
-      s_String:>{s},
-      _->Nothing
-      },
-    1
-    ];
+  Replace[rules, $convertEBNFTokenRules, 1];
+
+
+(* ::Subsubsubsection::Closed:: *)
+(*repeatTokens*)
+
+
+
+repeatTokens[tok_, n_]:=
+  Map[StringRepeat[tok, #]&, Range[n]];
+repeatTokens~SetAttributes~Listable;
+
+
+(* ::Subsubsubsection::Closed:: *)
+(*stickyOptional*)
+
+
+
+stickyOptional/:
+  {a___, stickyOptional[tags_], b:_String|_List, c___}:=
+    {a, glomOptional[tags, b], c};
+glomOptional[tag_, tok_]:=
+  tag<>tok;
+glomOptional~SetAttributes~Listable;
 
 
 (* ::Subsubsubsection::Closed:: *)
@@ -172,7 +223,7 @@ CollectEBNFTokens[rules_List]:=
 
 
 BuildEBNFLexer[e_EBNFGrammar]:=
-  LexerObject[Flatten@CollectEBNFTokens[e]];
+  LexerObject[DeleteDuplicates@Flatten@Values@CollectEBNFTokens[e]];
 
 
 (* ::Subsubsection::Closed:: *)
@@ -192,35 +243,51 @@ BuildEBNFLexer[e_EBNFGrammar]:=
 
 
 
-collectTokenBlockTypes[rules_]:=
-  Replace[
-    rules,
+$convertEBNFPatternRules=
+  Dispatch@
     {
-      EBNFSequence[start_, Verbatim[___], end_]:>
+      EBNFSequence[start_, EBNFAny[], end_]:>
         {"Delimited", {start, end}},
-     EBNFSequence[_, op_String, _]:>
+      EBNFSequence[EBNFAny[], op_, EBNFAny[]]:>
         "Operator",
-     EBNFSequence[head_String, body__]:>
-        {"Structured", collectEBNFTokens[{head, body}]},
+      EBNFSequence[EBNFAny[], op_]:>
+        "Default",
+      EBNFSequence[struct:Except[EBNFAny[]]..]:>
+        {"Structured", Replace[CollectEBNFTokens[{struct}], {a_, ___}:>a, 1]},
+      EBNFRule[
+        name_,
+        struct_,
+        ops___
+        ]:>({name[[1]], ops}->Flatten[collectTokenBlockTypes@{struct}, 1]),
+      s_String:>s,
       _->Nothing
-      },
-    1
-    ]
+      };
+
+
+collectTokenBlockTypes[rules_]:=
+  Replace[rules, $convertEBNFPatternRules, 1]
 
 
 CollectEBNFTokenPatterns[e_EBNFGrammar]:=
   CollectEBNFTokenPatterns[e["Rules"]];
 CollectEBNFTokenPatterns[rules_List]:=
-  MapThread[
-    <|
-      "Token"->If[ListQ@#, First[#], #],
-      "BlockType"->#2,
-      Sequence@@If[ListQ@#, Rest[#], {}]
-      |>&,
+  With[
     {
-      CollectEBNFTokens,
-      collectTokenBlockTypes[rules[[All, 2]]]
-      }
+      tokens=Association@CollectEBNFTokens[rules],
+      blocks=Association@collectTokenBlockTypes[rules]
+      },
+   Throw@Flatten@MapIndexed[
+      Table[
+        <|
+          "Token"->t,
+          "BlockType"->blocks[#2[[1]]],
+          "BlockName"->#2[[1, 1]],
+          Sequence@@#2[[1, 2]]
+          |>,
+        {t, #}
+        ]&,
+      tokens
+      ]
     ];
 
 

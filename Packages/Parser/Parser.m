@@ -79,7 +79,7 @@ normalizeTokenHandler[a_String]:=
   <|
     "Token"->a,
     "TokenType"->"Atomic",
-    "BlockType"->"Infinite",
+    "BlockType"->"Default",
     "DataFunction"->(#["Body"]&)
     |>
 
@@ -89,7 +89,7 @@ normalizeTokenHandler[a_Association]:=
     <|
       "DataFunction"->(#["Body"]&),
       "TokenType"->"Atomic",
-      "BlockType"->"Infinite"
+      "BlockType"->"Default"
       |>,
     a
     ];
@@ -288,7 +288,7 @@ closeNode[spec_, next_, node_, bt:{"FixedLength", n_}]:=
         "CloseNode"
         ]
     |>;
-closeNode[spec_, next_, node_, bt:"Infinite"]:=
+closeNode[spec_, next_, node_, bt:"Default"]:=
   <|
     "Node"->
       AddASTNodeData[node, 
@@ -612,7 +612,7 @@ ParseStream[parser_, stream_]:=
     Internal`WithLocalSettings[
       None,
       state["CurrentNode"] = ast["Tree"];
-      state["BlockType"] = "Infinite";
+      state["BlockType"] = "Default";
       state["Precedence"] = -Infinity;
       parseStream[{stack, state, handlers}, TokenStreamer@toks];
       {
