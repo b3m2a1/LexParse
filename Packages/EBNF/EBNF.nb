@@ -8,7 +8,12 @@ Notebook[{Cell[CellGroupData[{Cell["ENBF Implementation", "CodeSection"],
             "\"\""}], ";"}], "\n", RowBox[
          {RowBox[{RowBox[{"EBNFRepeated", "::", "usage"}], "=", "\"\""}], 
           ";"}], "\n", RowBox[{RowBox[{RowBox[{"EBNFAny", "::", "usage"}], 
-            "=", "\"\""}], ";"}]}], "CodeInput"], 
+            "=", "\"\""}], ";"}], "\n", 
+        RowBox[{RowBox[{RowBox[{"EBNFStringData", "::", "usage"}], "=", 
+            "\"\""}], ";"}], "\n", RowBox[
+         {RowBox[{RowBox[{"EBNFExcept", "::", "usage"}], "=", 
+            "\"Only has meaning in the context of escape character\""}], 
+          ";"}]}], "CodeInput"], 
      Cell[BoxData[RowBox[{RowBox[{RowBox[{"BuildEBNFGrammar", "::", 
              "usage"}], "=", "\"\""}], ";"}]], "CodeInput"], 
      Cell[BoxData[{RowBox[{RowBox[{RowBox[{"BuildEBNFGrammarRule", "::", 
@@ -36,15 +41,40 @@ https://www.ics.uci.edu/~pattis/misc/ebnf2.pdf\n\[RightFloor]", "Text",
 gonna have a few special heads here (just because explicit types are useful). \
 These will map very directly onto Mathematica structures (obviously, because \
 Mathematica is implemented using EBNF-type rules).\[RightFloor]", "Text", 
-            Evaluatable -> True], Cell[BoxData[{RowBox[{RowBox[{"EBNFRule", 
-                  "[", RowBox[{"name_", ",", " ", "structure_"}], "]"}], 
-                ";"}], "\n", RowBox[{RowBox[{"EBNFSequence", "[", "seq__", 
-                  "]"}], ";"}], "\n", RowBox[{RowBox[{"EBNFAlternatives", 
-                  "[", "alts__", "]"}], ";"}], "\n", RowBox[{RowBox[
-                 {"EBNFOptional", "[", RowBox[{"structure_", ",", " ", 
-                    "val_"}], "]"}], ";"}], "\n", RowBox[{RowBox[
-                 {"EBNFRepeated", "[", "structure_", "]"}], ";"}], "\n", 
-              RowBox[{RowBox[{"EBNFAny", "[", "]"}], ";"}]}], "CodeInput"], 
+            Evaluatable -> True], Cell[BoxData[{RowBox[{RowBox[{"Unprotect", 
+                  "[", "\n", "  ", RowBox[{"EBNFAlternatives", ",", " ", 
+                    "EBNFSequence", ",", " ", "EBNFRule", ",", " ", 
+                    "EBNFOptional", ",", " ", "EBNFRepeated", ",", "\n", 
+                    "  ", "EBNFAny", ",", " ", "EBNFStringData", ",", " ", 
+                    "EBNFExcept"}], "\n", "  ", "]"}], ";"}], "\n", 
+              RowBox[{RowBox[{"Clear", "[", "\n", "  ", RowBox[
+                   {"EBNFAlternatives", ",", " ", "EBNFSequence", ",", " ", 
+                    "EBNFRule", ",", " ", "EBNFOptional", ",", " ", 
+                    "EBNFRepeated", ",", "\n", "  ", "EBNFAny", ",", " ", 
+                    "EBNFStringData", ",", " ", "EBNFExcept"}], "\n", "  ", 
+                  "]"}], ";"}], "\n", RowBox[{RowBox[{RowBox[{"Protect", "[", 
+                    "\n", "  ", RowBox[{"EBNFAlternatives", ",", " ", 
+                      "EBNFSequence", ",", " ", "EBNFRule", ",", " ", 
+                      "EBNFOptional", ",", " ", "EBNFRepeated", ",", "\n", 
+                      "  ", "EBNFAny", ",", " ", "EBNFStringData", ",", " ", 
+                      "EBNFExcept"}], "\n", "  ", "]"}], ";"}], " ", 
+                RowBox[{"(*", " ", RowBox[{RowBox[{"protecting", " ", 
+                      "against", " ", "my", " ", "tendency", " ", "to", " ", 
+                      "accidentally", " ", "type"}], " ", ":=", " ", 
+                    RowBox[{RowBox[{"instead", " ", "of"}], " ", 
+                      "\[RuleDelayed]"}]}], " ", "*)"}]}]}], "CodeInput"], 
+           Cell[BoxData[{RowBox[{RowBox[{"EBNFRule", "[", RowBox[{"name_", 
+                    ",", " ", "structure_"}], "]"}], ";"}], "\n", 
+              RowBox[{RowBox[{"EBNFSequence", "[", "seq__", "]"}], ";"}], 
+              "\n", RowBox[{RowBox[{"EBNFAlternatives", "[", "alts__", "]"}], 
+                ";"}], "\n", RowBox[{RowBox[{"EBNFOptional", "[", 
+                  RowBox[{"structure_", ",", " ", "val_"}], "]"}], ";"}], 
+              "\n", RowBox[{RowBox[{"EBNFRepeated", "[", "structure_", "]"}], 
+                ";"}]}], "CodeInput"], Cell[BoxData[
+             {RowBox[{RowBox[{"EBNFAny", "[", "]"}], ";"}], "\n", 
+              RowBox[{RowBox[{"EBNFStringData", "[", "]"}], ";"}], "\n", 
+              RowBox[{RowBox[{"EBNFExcept", "[", RowBox[{"pat_", ",", " ", 
+                    "tags_"}], "]"}], ";"}]}], "CodeInput"], 
            Cell[CellGroupData[
              {Cell["\[LeftCeiling]BuildEBNFGrammarValue\[RightFloor]", 
                "CodeSubsubsubsection", Evaluatable -> True], Cell[BoxData[
@@ -55,12 +85,24 @@ Mathematica is implemented using EBNF-type rules).\[RightFloor]", "Text",
                         "[", "s_Symbol", "]"}], "\[RuleDelayed]", RowBox[
                        {"Blank", "[", RowBox[{"SymbolName", "[", "s", "]"}], 
                         "]"}]}]}]}]], "CodeInput"], Cell[BoxData[
-                RowBox[{RowBox[{RowBox[{"BuildEBNFGrammarValue", "[", 
-                      RowBox[{RowBox[{"Verbatim", "[", "Alternatives", "]"}], 
-                        "[", "a__", "]"}], "]"}], ":=", "\n", "  ", 
-                    RowBox[{RowBox[{"BuildEBNFGrammarValue", "/@", RowBox[
-                         {"EBNFAlternatives", "[", "a", "]"}]}], "//", 
-                      "normalizeSlots"}]}], ";"}]], "CodeInput"], 
+                {RowBox[{RowBox[{RowBox[{"BuildEBNFGrammarValue", "[", 
+                       RowBox[{RowBox[{"Verbatim", "[", "Except", "]"}], "[", 
+                         RowBox[{"a_", ",", " ", "b_"}], "]"}], "]"}], ":=", 
+                     "\n", "  ", RowBox[{"EBNFExcept", "[", RowBox[
+                        {RowBox[{"BuildEBNFGrammarValue", "[", "a", "]"}], 
+                         ",", " ", RowBox[{"BuildEBNFGrammarValue", "[", "b", 
+                          "]"}]}], "]"}]}], ";"}], "\n", RowBox[
+                  {RowBox[{RowBox[{"BuildEBNFGrammarValue", "[", RowBox[
+                        {"String", "|", RowBox[{"String", "[", "]"}], "|", 
+                         RowBox[{"Verbatim", "[", "_String", "]"}]}], "]"}], 
+                     ":=", "\n", "  ", RowBox[{"EBNFStringData", "[", 
+                       "]"}]}], ";"}], "\n", RowBox[{RowBox[{RowBox[
+                      {"BuildEBNFGrammarValue", "[", RowBox[{RowBox[
+                          {"Verbatim", "[", "Alternatives", "]"}], "[", 
+                         "a__", "]"}], "]"}], ":=", "\n", "  ", RowBox[
+                      {RowBox[{"BuildEBNFGrammarValue", "/@", RowBox[
+                          {"EBNFAlternatives", "[", "a", "]"}]}], "//", 
+                       "normalizeSlots"}]}], ";"}]}], "CodeInput"], 
               Cell[BoxData[{RowBox[{RowBox[{RowBox[{"BuildEBNFGrammarValue", 
                        "[", RowBox[{RowBox[{"Verbatim", "[", "Sequence", 
                           "]"}], "[", "a__", "]"}], "]"}], ":=", "\n", "  ", 
@@ -119,7 +161,7 @@ Mathematica is implemented using EBNF-type rules).\[RightFloor]", "Text",
                          " ", "ops"}], "}"}]}], ";"}], "\n", RowBox[
                   {RowBox[{RowBox[{"BuildEBNFGrammarSymbol", "[", "e_", 
                        "]"}], ":=", "\n", "\t", RowBox[{"{", "e", "}"}]}], 
-                   ";"}]}], "CodeInput"]}, Open]], 
+                   ";"}]}], "CodeInput"]}, Closed]], 
            Cell[CellGroupData[
              {Cell["\[LeftCeiling]BuildEBNFGrammarRule\[RightFloor]", 
                "CodeSubsubsubsection", Evaluatable -> True], Cell[BoxData[
@@ -139,7 +181,7 @@ Mathematica is implemented using EBNF-type rules).\[RightFloor]", "Text",
                        "]"}], ":=", "\n", "  ", "e"}], ";"}], "\n", 
                  RowBox[{"BuildEBNFGrammarRule", "~", "SetAttributes", "~", 
                    RowBox[{"{", RowBox[{"HoldAll", ",", " ", 
-                       "SequenceHold"}], "}"}]}]}], "CodeInput"]}, Open]], 
+                       "SequenceHold"}], "}"}]}]}], "CodeInput"]}, Closed]], 
            Cell[CellGroupData[
              {Cell["\[LeftCeiling]BuildEBNFGrammar\[RightFloor]", 
                "CodeSubsubsubsection", Evaluatable -> True], Cell[BoxData[
@@ -182,7 +224,7 @@ Mathematica is implemented using EBNF-type rules).\[RightFloor]", "Text",
                           "\"Rules\""}], "]"}], ",", " ", "a", ",", " ", 
                          RowBox[{"BuildEBNFGrammar", "[", RowBox[{"Normal", 
                           "@", "a"}], "]"}]}], "]"}]}], ";"}]}], 
-               "CodeInput"]}, Open]]}, Closed]], 
+               "CodeInput"]}, Closed]]}, Open]], 
         Cell[CellGroupData[{Cell["\[LeftCeiling]BuildEBNFLexer\[RightFloor]", 
             "CodeSubsubsection", Evaluatable -> True], 
            Cell[CellGroupData[
@@ -196,30 +238,73 @@ to feed to the tokenizer to build the grammar\n\[RightFloor]", "Text",
                         "      ", RowBox[{RowBox[{RowBox[{"EBNFAlternatives", 
                           "[", "a___", "]"}], ":>", "\n", "        ", RowBox[
                           {"CollectEBNFTokens", "@", RowBox[{"{", "a", 
+                          "}"}]}]}], ",", "\n", "      ", RowBox[{"(*", " ", 
+                          RowBox[{"there", " ", "are", " ", "a", " ", "few", 
+                          " ", "special", " ", "formats", " ", "where", " ", 
+                          "we", " ", RowBox[{"_don", "'"}], "t_", " ", 
+                          "want", " ", "all", " ", "apparent", " ", 
+                          "tokens"}], " ", "*)"}], "\n", "      ", RowBox[
+                          {RowBox[{"EBNFSequence", "[", RowBox[{"tag_", ",", 
+                          " ", RowBox[{"EBNFStringData", "[", "]"}], ",", 
+                          " ", RowBox[{"EBNFExcept", "[", RowBox[{"escape_", 
+                          ",", " ", "end_"}], "]"}]}], "]"}], ":>", "\n", 
+                          "        ", RowBox[{"Flatten", "@", RowBox[{"With", 
+                          "[", "\n", "          ", RowBox[{RowBox[{"{", "\n", 
+                          "            ", RowBox[{RowBox[{"spec", "=", RowBox[
+                          {"Thread", "[", RowBox[{"{", RowBox[{"\"String\"", 
+                          ",", " ", RowBox[{"Flatten", "@", RowBox[{
+                          "CollectEBNFTokens", "[", RowBox[{"{", "end", 
+                          "}"}], "]"}]}]}], "}"}], "]"}]}], ",", "\n", 
+                          "            ", RowBox[{"main", "=", RowBox[
+                          {"CollectEBNFTokens", "[", RowBox[{"{", "tag", 
+                          "}"}], "]"}]}]}], "\n", "            ", "}"}], ",", 
+                          "\n", "          ", RowBox[{"Table", "[", "\n", 
+                          "            ", RowBox[{RowBox[{"t", "\[Rule]", 
+                          "spec"}], ",", "\n", "            ", RowBox[{"{", 
+                          RowBox[{"t", ",", " ", "main"}], "}"}]}], "\n", 
+                          "            ", "]"}]}], "\n", "          ", 
+                          "]"}]}]}], ",", "\n", "      ", RowBox[{RowBox[
+                          {"EBNFSequence", "[", RowBox[{"tag_", ",", " ", 
+                          RowBox[{"EBNFStringData", "[", "]"}]}], "]"}], 
+                          ":>", "\n", "        ", RowBox[{"Sequence", "@@", 
+                          RowBox[{"CollectEBNFTokens", "[", RowBox[{"{", 
+                          RowBox[{"EBNFSequence", "[", RowBox[{"tag", ",", 
+                          " ", RowBox[{"EBNFStringData", "[", "]"}], ",", 
+                          " ", "tag"}], "]"}], "}"}], "]"}]}]}], ",", "\n", 
+                          "      ", RowBox[{RowBox[{"EBNFSequence", "[", 
+                          RowBox[{"tag_", ",", " ", RowBox[{"EBNFStringData", 
+                          "[", "]"}], ",", " ", RowBox[{"end", ":", RowBox[
+                          {"Except", "[", "_EBNFExcept", "]"}]}]}], "]"}], 
+                          ":>", "\n", "        ", RowBox[{"Sequence", "@@", 
+                          RowBox[{"CollectEBNFTokens", "[", RowBox[{"{", 
+                          "\n", "          ", RowBox[{"EBNFSequence", "[", 
+                          RowBox[{"tag", ",", " ", RowBox[{"EBNFStringData", 
+                          "[", "]"}], ",", " ", RowBox[{"EBNFExcept", "[", 
+                          RowBox[{"\"\\\\\"", ",", " ", "end"}], "]"}]}], 
+                          "]"}], "\n", "          ", "}"}], "]"}]}]}], ",", 
+                          "\n", "      ", RowBox[{RowBox[{"EBNFSequence", 
+                          "[", "e___", "]"}], ":>", "\n", "        ", RowBox[
+                          {"CollectEBNFTokens", "@", RowBox[{"{", "e", 
                           "}"}]}]}], ",", "\n", "      ", RowBox[{RowBox[
-                          {"EBNFSequence", "[", "e___", "]"}], ":>", "\n", 
-                          "        ", RowBox[{"CollectEBNFTokens", "@", 
-                          RowBox[{"{", "e", "}"}]}]}], ",", "\n", "      ", 
-                          RowBox[{RowBox[{"EBNFOptional", "[", "arg_", "]"}], 
-                          ":>", "\n", "       ", RowBox[{"stickyOptional", 
-                          "[", RowBox[{"Value", "@", RowBox[
+                          {"EBNFOptional", "[", "arg_", "]"}], ":>", "\n", 
+                          "       ", RowBox[{"stickyOptional", "[", RowBox[
+                          {"Value", "@", RowBox[{"CollectEBNFTokens", "[", 
+                          RowBox[{"{", "arg", "}"}], "]"}]}], "]"}]}], ",", 
+                          "\n", "      ", RowBox[{RowBox[{"EBNFRepeated", 
+                          "[", "arg_", "]"}], ":>", "\n", "        ", RowBox[
+                          {"repeatTokens", "[", RowBox[{RowBox[
                           {"CollectEBNFTokens", "[", RowBox[{"{", "arg", 
-                          "}"}], "]"}]}], "]"}]}], ",", "\n", "      ", 
-                          RowBox[{RowBox[{"EBNFRepeated", "[", "arg_", "]"}], 
-                          ":>", "\n", "        ", RowBox[{"repeatTokens", 
-                          "[", RowBox[{RowBox[{"CollectEBNFTokens", "[", 
-                          RowBox[{"{", "arg", "}"}], "]"}], ",", " ", "10"}], 
-                          "]"}]}], ",", "\n", "      ", RowBox[{RowBox[
-                          {"EBNFRule", "[", "\n", "        ", RowBox[
-                          {"name_", ",", "\n", "        ", "struct_", ",", 
-                          "\n", "        ", "ops___"}], "\n", "        ", 
-                          "]"}], "\[RuleDelayed]", RowBox[{"(", RowBox[
-                          {RowBox[{"{", RowBox[{RowBox[{"name", "[", RowBox[
-                          {"[", "1", "]"}], "]"}], ",", " ", "ops"}], "}"}], 
-                          "->", RowBox[{"Flatten", "[", RowBox[{RowBox[
-                          {"CollectEBNFTokens", "@", RowBox[{"{", "struct", 
-                          "}"}]}], ",", " ", "1"}], "]"}]}], ")"}]}], ",", 
-                          "\n", "      ", RowBox[{"s_String", 
+                          "}"}], "]"}], ",", " ", "10"}], "]"}]}], ",", "\n", 
+                          "      ", RowBox[{RowBox[{"EBNFRule", "[", "\n", 
+                          "        ", RowBox[{"name_", ",", "\n", "        ", 
+                          "struct_", ",", "\n", "        ", "ops___"}], "\n", 
+                          "        ", "]"}], "\[RuleDelayed]", RowBox[{"(", 
+                          RowBox[{RowBox[{"{", RowBox[{RowBox[{"name", "[", 
+                          RowBox[{"[", "1", "]"}], "]"}], ",", " ", "ops"}], 
+                          "}"}], "->", RowBox[{"Flatten", "[", RowBox[
+                          {RowBox[{"CollectEBNFTokens", "@", RowBox[{"{", 
+                          "struct", "}"}]}], ",", " ", "1"}], "]"}]}], 
+                          ")"}]}], ",", "\n", "      ", RowBox[{"s_String", 
                           "\[RuleDelayed]", "s"}], ",", "\n", "      ", 
                           RowBox[{"_", "\[Rule]", "Nothing"}]}], "\n", 
                         "      ", "}"}]}]}], ";"}]], "CodeInput"], 
@@ -242,7 +327,7 @@ to feed to the tokenizer to build the grammar\n\[RightFloor]", "Text",
                           "#"}], "]"}], "&"}], ",", " ", RowBox[{"Range", 
                           "[", "n", "]"}]}], "]"}]}], ";"}], "\n", 
                  RowBox[{RowBox[{"repeatTokens", "~", "SetAttributes", "~", 
-                     "Listable"}], ";"}]}], "CodeInput"]}, Open]], 
+                     "Listable"}], ";"}]}], "CodeInput"]}, Closed]], 
            Cell[CellGroupData[
              {Cell["\[LeftCeiling]stickyOptional\[RightFloor]", 
                "CodeSubsubsubsection", Evaluatable -> True], 
@@ -260,17 +345,23 @@ to feed to the tokenizer to build the grammar\n\[RightFloor]", "Text",
                         {"tag_", ",", " ", "tok_"}], "]"}], ":=", "\n", "  ", 
                      RowBox[{"tag", "<>", "tok"}]}], ";"}], "\n", 
                  RowBox[{RowBox[{"glomOptional", "~", "SetAttributes", "~", 
-                     "Listable"}], ";"}]}], "CodeInput"]}, Open]], 
+                     "Listable"}], ";"}]}], "CodeInput"]}, Closed]], 
            Cell[CellGroupData[
              {Cell["\[LeftCeiling]BuildEBNFLexer\[RightFloor]", 
                "CodeSubsubsubsection", Evaluatable -> True], Cell[BoxData[
                 RowBox[{RowBox[{RowBox[{"BuildEBNFLexer", "[", 
                       "e_EBNFGrammar", "]"}], ":=", "\n", "  ", RowBox[
-                     {"LexerObject", "[", RowBox[{"DeleteDuplicates", "@", 
-                        RowBox[{"Flatten", "@", RowBox[{"Values", "@", 
-                          RowBox[{"CollectEBNFTokens", "[", "e", "]"}]}]}]}], 
-                      "]"}]}], ";"}]], "CodeInput"]}, Open]]}, Closed]], 
-        Cell[CellGroupData[
+                     {"LexerObject", "@", "\n", "    ", RowBox[{"Replace", 
+                        "[", "\n", "      ", RowBox[{RowBox[
+                          {"DeleteDuplicates", "@", RowBox[{"Flatten", "@", 
+                          RowBox[{"Values", "@", RowBox[{"CollectEBNFTokens", 
+                          "[", "e", "]"}]}]}]}], ",", "\n", "      ", 
+                          RowBox[{RowBox[{"(", RowBox[{"a_", "\[Rule]", 
+                          "b_"}], ")"}], "\[RuleDelayed]", RowBox[{"Flatten", 
+                          "[", RowBox[{"{", RowBox[{"a", ",", " ", "b"}], 
+                          "}"}], "]"}]}], ",", "\n", "      ", "1"}], "\n", 
+                        "      ", "]"}]}]}], ";"}]], "CodeInput"]}, 
+             Closed]]}, Open]], Cell[CellGroupData[
           {Cell["\[LeftCeiling]BuildEBNFParser\[RightFloor]", 
             "CodeSubsubsection", Evaluatable -> True], 
            Cell[CellGroupData[
@@ -291,29 +382,46 @@ to the full spec\n\[RightFloor]", "Text", Evaluatable -> True],
                           "[", "]"}], ",", " ", "op_", ",", " ", RowBox[
                           {"EBNFAny", "[", "]"}]}], "]"}], ":>", "\n", 
                           "        ", "\"Operator\""}], ",", "\n", "      ", 
-                          RowBox[{RowBox[{"EBNFSequence", "[", RowBox[
-                          {RowBox[{"EBNFAny", "[", "]"}], ",", " ", "op_"}], 
-                          "]"}], ":>", "\n", "        ", "\"Default\""}], 
-                          ",", "\n", "      ", RowBox[{RowBox[
-                          {"EBNFSequence", "[", RowBox[{"struct", ":", RowBox[
-                          {RowBox[{"Except", "[", RowBox[{"EBNFAny", "[", 
-                          "]"}], "]"}], ".."}]}], "]"}], "\[RuleDelayed]", 
+                          RowBox[{RowBox[{"EBNFSequence", "[", RowBox[{"op_", 
+                          ",", " ", RowBox[{"anys", ":", RowBox[{RowBox[
+                          {"EBNFAny", "[", "]"}], ".."}]}]}], "]"}], ":>", 
                           "\n", "        ", RowBox[{"{", RowBox[
-                          {"\"Structured\"", ",", " ", RowBox[{"Replace", 
-                          "[", RowBox[{RowBox[{"CollectEBNFTokens", "[", 
-                          RowBox[{"{", "struct", "}"}], "]"}], ",", " ", 
-                          RowBox[{RowBox[{"{", RowBox[{"a_", ",", " ", 
-                          "___"}], "}"}], "\[RuleDelayed]", "a"}], ",", " ", 
-                          "1"}], "]"}]}], "}"}]}], ",", "\n", "      ", 
-                          RowBox[{RowBox[{"EBNFRule", "[", "\n", "        ", 
-                          RowBox[{"name_", ",", "\n", "        ", "struct_", 
-                          ",", "\n", "        ", "ops___"}], "\n", 
-                          "        ", "]"}], "\[RuleDelayed]", RowBox[{"(", 
-                          RowBox[{RowBox[{"{", RowBox[{RowBox[{"name", "[", 
-                          RowBox[{"[", "1", "]"}], "]"}], ",", " ", "ops"}], 
-                          "}"}], "->", RowBox[{"Flatten", "[", RowBox[
-                          {RowBox[{"collectTokenBlockTypes", "@", RowBox[
-                          {"{", "struct", "}"}]}], ",", " ", "1"}], "]"}]}], 
+                          {"\"FixedLength\"", ",", " ", RowBox[{"Length", 
+                          "@", RowBox[{"{", "anys", "}"}]}]}], "}"}]}], ",", 
+                          "\n", "      ", RowBox[{RowBox[{"EBNFSequence", 
+                          "[", RowBox[{"op_", ",", " ", RowBox[{"anys", ":", 
+                          RowBox[{RowBox[{"EBNFAny", "[", "]"}], ".."}]}]}], 
+                          "]"}], ":>", "\n", "        ", RowBox[{"{", RowBox[
+                          {"\"FixedLength\"", ",", " ", RowBox[{"Length", 
+                          "@", RowBox[{"{", "anys", "}"}]}]}], "}"}]}], ",", 
+                          "\n", "      ", RowBox[{RowBox[{"EBNFSequence", 
+                          "[", RowBox[{RowBox[{"EBNFAny", "[", "]"}], ",", 
+                          " ", "op_"}], "]"}], ":>", "\n", "        ", 
+                          "\"Default\""}], ",", "\n", "      ", RowBox[
+                          {RowBox[{"EBNFSequence", "[", RowBox[{"_", ",", 
+                          " ", RowBox[{"EBNFStringData", "[", "]"}], ",", 
+                          " ", "___"}], "]"}], ":>", "\n", "        ", 
+                          "\"Complete\""}], ",", "\n", "      ", RowBox[
+                          {RowBox[{"EBNFSequence", "[", RowBox[{"struct", 
+                          ":", RowBox[{RowBox[{"Except", "[", RowBox[
+                          {"EBNFAny", "[", "]"}], "]"}], ".."}]}], "]"}], 
+                          "\[RuleDelayed]", "\n", "        ", RowBox[{"{", 
+                          RowBox[{"\"Structured\"", ",", " ", RowBox[
+                          {"Replace", "[", RowBox[{RowBox[{
+                          "CollectEBNFTokens", "[", RowBox[{"{", "struct", 
+                          "}"}], "]"}], ",", " ", RowBox[{RowBox[{"{", RowBox[
+                          {"a_", ",", " ", "___"}], "}"}], "\[RuleDelayed]", 
+                          "a"}], ",", " ", "1"}], "]"}]}], "}"}]}], ",", 
+                          "\n", "      ", RowBox[{RowBox[{"EBNFRule", "[", 
+                          "\n", "        ", RowBox[{"name_", ",", "\n", 
+                          "        ", "struct_", ",", "\n", "        ", 
+                          "ops___"}], "\n", "        ", "]"}], 
+                          "\[RuleDelayed]", RowBox[{"(", RowBox[{RowBox[
+                          {"{", RowBox[{RowBox[{"name", "[", RowBox[{"[", 
+                          "1", "]"}], "]"}], ",", " ", "ops"}], "}"}], "->", 
+                          RowBox[{"Flatten", "[", RowBox[{RowBox[
+                          {"collectTokenBlockTypes", "@", RowBox[{"{", 
+                          "struct", "}"}]}], ",", " ", "1"}], "]"}]}], 
                           ")"}]}], ",", "\n", "      ", RowBox[{"s_String", 
                           "\[RuleDelayed]", "s"}], ",", "\n", "      ", 
                           RowBox[{"_", "\[Rule]", "Nothing"}]}], "\n", 
@@ -336,26 +444,49 @@ to the full spec\n\[RightFloor]", "Text", Evaluatable -> True],
                           RowBox[{"blocks", "=", RowBox[{"Association", "@", 
                           RowBox[{"collectTokenBlockTypes", "[", "rules", 
                           "]"}]}]}]}], "\n", "      ", "}"}], ",", "\n", 
-                         "   ", RowBox[{"Throw", "@", RowBox[{"Flatten", "@", 
-                          RowBox[{"MapIndexed", "[", "\n", "      ", RowBox[
-                          {RowBox[{RowBox[{"Table", "[", "\n", "  ", 
-                          "      ", RowBox[{RowBox[{"<|", "\n", "  ", 
-                          "        ", RowBox[{RowBox[{"\"Token\"", "\[Rule]", 
-                          "t"}], ",", "\n", "  ", "  ", "      ", RowBox[
-                          {"\"BlockType\"", "\[Rule]", RowBox[{"blocks", "[", 
-                          RowBox[{"#2", "[", RowBox[{"[", "1", "]"}], "]"}], 
-                          "]"}]}], ",", "\n", "  ", "  ", "      ", RowBox[
-                          {"\"BlockName\"", "\[Rule]", RowBox[{"#2", "[", 
-                          RowBox[{"[", RowBox[{"1", ",", " ", "1"}], "]"}], 
-                          "]"}]}], ",", "\n", "  ", "        ", RowBox[
-                          {"Sequence", "@@", RowBox[{"#2", "[", RowBox[{"[", 
-                          RowBox[{"1", ",", " ", "2"}], "]"}], "]"}]}]}], 
-                          "\n", "  ", "        ", "|>"}], ",", "\n", "  ", 
-                          "      ", RowBox[{"{", RowBox[{"t", ",", " ", 
-                          "#"}], "}"}]}], "\n", "  ", "      ", "]"}], "&"}], 
-                          ",", "\n", "      ", "tokens"}], "\n", "      ", 
-                          "]"}]}]}]}], "\n", "    ", "]"}]}], ";"}]}], 
-               "CodeInput"]}, Open]], Cell[CellGroupData[
+                         "   ", RowBox[{RowBox[{"DeleteDuplicatesBy", "[", 
+                          RowBox[{"#Token", "&"}], "]"}], "@", RowBox[
+                          {"Flatten", "@", RowBox[{"Values", "@", RowBox[
+                          {"MapIndexed", "[", "\n", "      ", RowBox[{RowBox[
+                          {RowBox[{"With", "[", RowBox[{RowBox[{"{", RowBox[
+                          {RowBox[{"k", "=", RowBox[{"#2", "[", RowBox[{"[", 
+                          RowBox[{"1", ",", " ", "1"}], "]"}], "]"}]}], ",", 
+                          " ", RowBox[{"b", "=", RowBox[{"blocks", "[", 
+                          RowBox[{"#2", "[", RowBox[{"[", RowBox[{"1", ",", 
+                          " ", "1"}], "]"}], "]"}], "]"}]}]}], "}"}], ",", 
+                          "\n", "        ", RowBox[{"MapIndexed", "[", "\n", 
+                          "          ", RowBox[{RowBox[{RowBox[{"<|", "\n", 
+                          "  ", "          ", RowBox[{RowBox[{"\"Token\"", 
+                          "\[Rule]", RowBox[{"Replace", "[", RowBox[{"#", 
+                          ",", " ", RowBox[{RowBox[{"(", RowBox[{"a_", 
+                          "\[Rule]", "_"}], ")"}], "\[RuleDelayed]", "a"}]}], 
+                          "]"}]}], ",", "\n", "            ", RowBox[{"If", 
+                          "[", RowBox[{RowBox[{RowBox[{"b", "[", RowBox[{"[", 
+                          "1", "]"}], "]"}], "\[Equal]", "\"Delimited\""}], 
+                          ",", "\n", "              ", RowBox[{
+                          "\"TokenType\"", "->", RowBox[{"If", "[", RowBox[
+                          {RowBox[{"EvenQ", "[", RowBox[{"#2", "[", RowBox[
+                          {"[", "1", "]"}], "]"}], "]"}], ",", " ", 
+                          "\"BlockCloser\"", ",", " ", "\"BlockOpener\""}], 
+                          "]"}]}], ",", "\n", "              ", "Nothing"}], 
+                          "\n", "              ", "]"}], ",", "\n", 
+                          "            ", RowBox[{"\"BlockType\"", "\[Rule]", 
+                          "\n", "  ", "              ", RowBox[{"If", "[", 
+                          RowBox[{RowBox[{RowBox[{"Length", "[", "b", "]"}], 
+                          "\[Equal]", "1"}], ",", " ", RowBox[{"b", "[", 
+                          RowBox[{"[", "1", "]"}], "]"}], ",", " ", "b"}], 
+                          "]"}]}], ",", "\n", "  ", "          ", RowBox[
+                          {"\"BlockName\"", "\[Rule]", RowBox[{"k", "[", 
+                          RowBox[{"[", "1", "]"}], "]"}]}], ",", "\n", 
+                          "            ", RowBox[{"Sequence", "@@", RowBox[
+                          {"k", "[", RowBox[{"[", "2", "]"}], "]"}]}]}], 
+                          "\n", "            ", "|>"}], "&"}], ",", "\n", 
+                          "  ", "        ", RowBox[{"Flatten", "@", "#"}]}], 
+                          "\n", "  ", "        ", "]"}]}], "\n", "        ", 
+                          "]"}], "&"}], ",", "\n", "      ", "tokens"}], 
+                          "\n", "      ", "]"}]}]}]}]}], "\n", "    ", 
+                       "]"}]}], ";"}]}], "CodeInput"]}, Open]], 
+           Cell[CellGroupData[
              {Cell["\[LeftCeiling]BuildEBNFParser\[RightFloor]", 
                "CodeSubsubsubsection", Evaluatable -> True], 
               Cell["\[LeftCeiling]\n\tBuilds a ParserObject that can handle \
@@ -365,18 +496,18 @@ the specified EBNF grammar\n\[RightFloor]", "Text", Evaluatable -> True],
                    {"Module", "[", RowBox[{RowBox[{"{", RowBox[{RowBox[
                           {"lexer", "=", RowBox[{"BuildEBNFLexer", "[", "e", 
                           "]"}]}], ",", " ", "p"}], "}"}], ",", "\n", "    ", 
-                      RowBox[{RowBox[{"p", " ", "=", " ", RowBox[
-                          {"ParserObject", "[", "\n", "      ", RowBox[
-                          {"lexer", ",", "\n", "      ", RowBox[
+                      RowBox[{RowBox[{"p", " ", "=", " ", "\n", "      ", 
+                          RowBox[{"ParserObject", "[", "\n", "        ", 
+                          RowBox[{"lexer", ",", "\n", "        ", RowBox[
                           {"CollectEBNFTokenPatterns", "[", "e", "]"}]}], 
-                          "\n", "      ", "]"}]}], ";", "\n", "    ", 
-                        RowBox[{"InterfaceModify", "[", RowBox[
-                          {"ParserObject", ",", "\n", "      ", "p", ",", 
-                          "\n", "      ", RowBox[{RowBox[{"Append", "[", 
+                          "\n", "  ", "      ", "]"}]}], ";", "\n", "    ", 
+                        RowBox[{"InterfaceModify", "[", "\n", "      ", 
+                          RowBox[{"ParserObject", ",", "\n", "      ", "p", 
+                          ",", "\n", "      ", RowBox[{RowBox[{"Append", "[", 
                           RowBox[{"#", ",", " ", RowBox[{"\"Grammar\"", 
                           "\[Rule]", "e"}]}], "]"}], "&"}]}], "\n", "      ", 
                           "]"}]}]}], "\n", "    ", "]"}]}]], "CodeInput"]}, 
-             Open]]}, Open]]}, Open]], 
+             Closed]]}, Open]]}, Open]], 
      Cell[BoxData[RowBox[{RowBox[{"End", "[", "]"}], ";"}]], 
       "InputSection"]}, Open]], Cell["", "SectionSeparator"]}, 
  FrontEndVersion -> "12.0 for Mac OS X x86 (64-bit) (April 8, 2019)", 

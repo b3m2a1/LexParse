@@ -15,7 +15,39 @@ Notebook[{Cell[CellGroupData[{Cell["AST", "CodeSection"],
                   "      ", "|>"}]}]}], "\n", "  ", "]"}]], "CodeInput"], 
         Cell[BoxData[RowBox[{RowBox[{"getKey", "[", RowBox[{RowBox[
                  {"ASTObject", "[", "a_", "]"}], ",", " ", "k_"}], "]"}], 
-            ":=", RowBox[{"a", "[", "k", "]"}]}]], "CodeInput"]}, Open]], 
+            ":=", RowBox[{"a", "[", "k", "]"}]}]], "CodeInput"], 
+        Cell[BoxData[{RowBox[{RowBox[{RowBox[{RowBox[{"InterfaceMethod", "[", 
+                   "ASTObject", "]"}], "@", "\n", "  ", RowBox[
+                  {RowBox[{"ast_ASTObject", "[", "\"Insert\"", "]"}], "[", 
+                   "a__", "]"}]}], ":=", "\n", "    ", RowBox[{"AddASTNode", 
+                 "[", RowBox[{"ast", ",", " ", "a"}], "]"}]}], ";"}], "\n", 
+           RowBox[{RowBox[{RowBox[{RowBox[{"InterfaceMethod", "[", 
+                   "ASTObject", "]"}], "@", "\n", "  ", RowBox[
+                  {RowBox[{"ast_ASTObject", "[", "\"Pop\"", "]"}], "[", 
+                   "a__", "]"}]}], ":=", "\n", "    ", RowBox[{"PopASTNode", 
+                 "[", RowBox[{"ast", ",", " ", "a"}], "]"}]}], ";"}], "\n", 
+           RowBox[{RowBox[{RowBox[{RowBox[{"InterfaceMethod", "[", 
+                   "ASTObject", "]"}], "@", "\n", "  ", RowBox[
+                  {RowBox[{"ast_ASTObject", "[", "\"Replace\"", "]"}], "[", 
+                   RowBox[{"pos_", ",", " ", "a_"}], "]"}]}], ":=", "\n", 
+               "    ", RowBox[{"ReplaceASTNode", "[", RowBox[{"ast", ",", 
+                   " ", "pos", ",", " ", "a"}], "]"}]}], ";"}]}], 
+         "CodeInput"], Cell[BoxData[
+          {RowBox[{RowBox[{RowBox[{"InterfaceMethod", "[", "ASTObject", 
+                 "]"}], "@", "\n", "  ", RowBox[{RowBox[{"ast_ASTObject", 
+                   "[", "\"Walk\"", "]"}], "[", "args___", "]"}]}], ":=", 
+             RowBox[{"WalkAST", "[", RowBox[{"ast", ",", " ", "args"}], 
+               "]"}]}], "\n", RowBox[{RowBox[{RowBox[{RowBox[
+                  {"InterfaceMethod", "[", "ASTObject", "]"}], "@", "\n", 
+                 "  ", RowBox[{RowBox[{"ast_ASTObject", "[", "\"Format\"", 
+                     "]"}], "[", "args___", "]"}]}], ":=", RowBox[
+                {"FormatAST", "[", RowBox[{"ast", ",", " ", "args"}], 
+                 "]"}]}], ";"}], "\n", RowBox[
+            {RowBox[{RowBox[{"InterfaceMethod", "[", "ASTObject", "]"}], "@", 
+               "\n", "  ", RowBox[{RowBox[{"ast_ASTObject", "[", 
+                   "\"TrimWhitespace\"", "]"}], "[", "]"}]}], ":=", 
+             RowBox[{"TrimASTWhitespace", "[", "ast", "]"}]}]}], 
+         "CodeInput"]}, Open]], 
      Cell[BoxData[RowBox[{RowBox[{"End", "[", "]"}], ";"}]], 
       "InputSection"]}, Open]], Cell["", "SectionSeparator"]}, 
  FrontEndVersion -> "12.0 for Mac OS X x86 (64-bit) (April 8, 2019)", 

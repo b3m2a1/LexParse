@@ -24,7 +24,14 @@ prepTokenSpec//Clear;
 prepTokenSpec[c_String]:=
   <|"Token"->c|>;
 prepTokenSpec[{c_String, "String"}]:=
-  
+  prepTokenSpec[{c, "String", c, "\\"}];
+prepTokenSpec[{c_String, "String", end_}]:=
+  prepTokenSpec[{c, "String", end, "\\"}];
+prepTokenSpec[{c_String, "String", end_, escape_}]:=
+  <|
+    "Token"->c, 
+    "Handler"->readStringToken[c, end, escape]
+    |>;
 prepTokenSpec[a_Association]:=
   a;
 

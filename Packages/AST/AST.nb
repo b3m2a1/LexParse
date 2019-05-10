@@ -1,16 +1,38 @@
 Notebook[{Cell[CellGroupData[{Cell["AST", "CodeSection"], 
-     Cell[BoxData[RowBox[{RowBox[{RowBox[{"ASTNode", "::", "usage"}], "=", 
-           "\"Symbolic rep of an AST node\""}], ";"}]], "CodeInput"], 
-     Cell[BoxData[{RowBox[{RowBox[{RowBox[{"ConstructASTObject", "::", 
-              "usage"}], "=", "\"\""}], ";"}], "\n", 
-        RowBox[{RowBox[{RowBox[{"AddASTNode", "::", "usage"}], "=", "\"\""}], 
-          ";"}], "\n", RowBox[{RowBox[{RowBox[{"MakeASTNode", "::", 
-              "usage"}], "=", "\"\""}], ";"}], "\n", 
-        RowBox[{RowBox[{RowBox[{"GetASTNode", "::", "usage"}], "=", "\"\""}], 
-          ";"}], "\n", RowBox[{RowBox[{RowBox[{"GetASTNodeProperty", "::", 
-              "usage"}], "=", "\"\""}], ";"}], "\n", 
-        RowBox[{RowBox[{RowBox[{"AddASTNodeData", "::", "usage"}], "=", 
-            "\"\""}], ";"}]}], "CodeInput"], 
+     Cell[CellGroupData[{Cell["\[LeftCeiling]ASTs\[RightFloor]", 
+         "CodeSubsection", Evaluatable -> True], 
+        Cell[BoxData[RowBox[{RowBox[{RowBox[{"ConstructASTObject", "::", 
+                "usage"}], "=", "\"\""}], ";"}]], "CodeInput"], 
+        Cell[BoxData[{RowBox[{RowBox[{RowBox[{"WalkAST", "::", "usage"}], 
+               "=", "\"A function for recursively traversing the AST\""}], 
+             ";"}], "\n", RowBox[{RowBox[{RowBox[{"FormatAST", "::", 
+                 "usage"}], "=", 
+               "\"A function for making a formatted form of the AST\""}], 
+             ";"}], "\n", RowBox[{RowBox[{RowBox[{"TrimASTWhitespace", "::", 
+                 "usage"}], "=", "\"A little function that uses WalkAST to \
+remove whitespace\""}], ";"}]}], "CodeInput"], 
+        Cell[BoxData[RowBox[{RowBox[{RowBox[{"ASTJoin", "::", "usage"}], "=", 
+              "\"Joins two ASTObjects\""}], ";"}]], "CodeInput"]}, Open]], 
+     Cell[CellGroupData[{Cell["\[LeftCeiling]Nodes\[RightFloor]", 
+         "CodeSubsection", Evaluatable -> True], 
+        Cell[BoxData[RowBox[{RowBox[{RowBox[{"ASTNode", "::", "usage"}], "=", 
+              "\"Symbolic rep of an AST node\""}], ";"}]], "CodeInput"], 
+        Cell[BoxData[RowBox[{RowBox[{RowBox[{"MakeASTNode", "::", "usage"}], 
+              "=", "\"\""}], ";"}]], "CodeInput"], 
+        Cell[BoxData[{RowBox[{RowBox[{RowBox[{"GetASTNode", "::", "usage"}], 
+               "=", "\"\""}], ";"}], "\n", RowBox[
+            {RowBox[{RowBox[{"GetASTNodeProperty", "::", "usage"}], "=", 
+               "\"\""}], ";"}]}], "CodeInput"], 
+        Cell[BoxData[{RowBox[{RowBox[{RowBox[{"AddASTNode", "::", "usage"}], 
+               "=", "\"\""}], ";"}], "\n", RowBox[
+            {RowBox[{RowBox[{"PopASTNode", "::", "usage"}], "=", "\"\""}], 
+             ";"}], "\n", RowBox[{RowBox[{RowBox[{"ReplaceASTNode", "::", 
+                 "usage"}], "=", "\"\""}], ";"}]}], "CodeInput"], 
+        Cell[BoxData[RowBox[{RowBox[{RowBox[{"AddASTNodeData", "::", 
+                "usage"}], "=", "\"\""}], ";"}]], "CodeInput"], 
+        Cell[BoxData[RowBox[{RowBox[{RowBox[{"CompleteASTNodeQ", "::", 
+                "usage"}], "=", "\"Checks whether a Node is complete \
+according to a BlockType\""}], ";"}]], "CodeInput"]}, Open]], 
      Cell[CellGroupData[
        {Cell[BoxData[RowBox[{RowBox[{"Begin", "[", "\"`Private`\"", "]"}], 
             ";"}]], "InputSection"], Cell[CellGroupData[
@@ -21,112 +43,869 @@ Notebook[{Cell[CellGroupData[{Cell["AST", "CodeSection"],
                     RowBox[{"\"Tree\"", "\[Rule]", RowBox[{"<|", "\n", 
                         "      ", RowBox[{RowBox[{"\"Children\"", "\[Rule]", 
                           RowBox[{"{", "}"}]}], ",", "\n", "      ", RowBox[
-                          {"\"Root\"", "\[Rule]", "True"}]}], "\n", "      ", 
-                        "|>"}]}], "\n", "    ", "|>"}]}], ";"}], "\n", 
-              RowBox[{RowBox[{"ConstructASTObject", "[", "a_Association", 
-                  "]"}], ":=", "\n", "  ", RowBox[{"If", "[", RowBox[
+                          {"\"Body\"", "\[Rule]", "None"}], ",", "\n", 
+                          "      ", RowBox[{"\"Root\"", "\[Rule]", "True"}], 
+                          ",", "\n", "      ", RowBox[{"\"Token\"", 
+                          "\[Rule]", "None"}]}], "\n", "      ", "|>"}]}], 
+                    "\n", "    ", "|>"}]}], ";"}], "\n", RowBox[{
+                RowBox[{"ConstructASTObject", "[", "a_Association", "]"}], 
+                ":=", "\n", "  ", RowBox[{"If", "[", RowBox[
                    {RowBox[{"KeyExistsQ", "[", RowBox[{"a", ",", " ", 
                         "\"Tree\""}], "]"}], ",", "\n", "    ", "a", ",", 
                     "\n", "    ", RowBox[{"<|", RowBox[{"\"Tree\"", 
                         "\[Rule]", "a"}], "|>"}]}], "\n", "    ", "]"}]}]}], 
-            "CodeInput"]}, Open]], Cell[CellGroupData[
-          {Cell["\[LeftCeiling]AtomicASTNodeQ\[RightFloor]", 
+            "CodeInput"]}, Closed]]}, Open]], 
+     Cell[CellGroupData[{Cell["\[LeftCeiling]ASTNode\[RightFloor]", 
+         "CodeSubsection", Evaluatable -> True], 
+        Cell[CellGroupData[{Cell["\[LeftCeiling]AtomicASTNodeQ\[RightFloor]", 
             "CodeSubsubsection", Evaluatable -> True], 
            Cell[BoxData[RowBox[{RowBox[{RowBox[{"AtomicASTNodeQ", "[", 
                    "node_", "]"}], ":=", "\n", "  ", RowBox[
-                  {RowBox[{"node", "[", "\"Children\"", "]"}], "===", 
-                   "None"}]}], ";"}]], "CodeInput"]}, Open]], 
+                  {RowBox[{"Length", "[", RowBox[{"node", "[", 
+                       "\"Children\"", "]"}], "]"}], "\[Equal]", "0"}]}], 
+               ";"}]], "CodeInput"]}, Closed]], 
         Cell[CellGroupData[{Cell["\[LeftCeiling]MakeASTNode\[RightFloor]", 
             "CodeSubsubsection", Evaluatable -> True], 
+           Cell[BoxData[RowBox[{RowBox[{"iMakeASTNode", "[", RowBox[
+                  {"children_", ",", " ", "body_", ",", " ", RowBox[
+                    {"token_:", "None"}], ",", " ", RowBox[{"props", ":", 
+                     RowBox[{"_", "?", "AssociationQ"}], ":", RowBox[
+                      {"<|", "|>"}]}]}], "]"}], ":=", "\n", "  ", RowBox[
+                {"Join", "[", "\n", "    ", RowBox[{RowBox[{"<|", "\n", 
+                     "      ", RowBox[{RowBox[{"\"Children\"", "\[Rule]", 
+                         "children"}], ",", "\n", "      ", RowBox[
+                        {"\"Body\"", "\[Rule]", "body"}], ",", "\n", 
+                       "      ", RowBox[{"\"Token\"", "->", "token"}], ",", 
+                       "\n", "      ", RowBox[{"\"Type\"", "\[Rule]", 
+                         RowBox[{"Lookup", "[", RowBox[{"props", ",", " ", 
+                          "\"BlockType\"", ",", " ", "\"Default\""}], 
+                          "]"}]}], ",", "\n", "      ", RowBox[
+                        {"\"TypeName\"", "->", RowBox[{"Lookup", "[", RowBox[
+                          {"props", ",", " ", "\"BlockName\"", ",", " ", 
+                          "None"}], "]"}]}], ",", "\n", "      ", RowBox[
+                        {"\"Root\"", "\[Rule]", "False"}]}], "\n", "      ", 
+                     "|>"}], ",", "\n", "    ", RowBox[{"KeyDrop", "[", 
+                     RowBox[{"props", ",", " ", RowBox[{"{", RowBox[
+                          {"\"TokenType\"", ",", " ", "\"BlockType\"", ",", 
+                          " ", "\"BlockName\"", ",", " ", 
+                          "\"DataFunction\""}], "}"}]}], "]"}]}], "\n", 
+                 "    ", "]"}]}]], "CodeInput"], 
            Cell[BoxData[{RowBox[{"MakeASTNode", "//", "Clear"}], "\n", 
               RowBox[{RowBox[{RowBox[{"MakeASTNode", "[", RowBox[
                      {"\"Atomic\"", ",", " ", "data_", ",", " ", RowBox[
-                       {"token_:", "None"}]}], "]"}], ":=", "\n", "  ", 
-                  RowBox[{"<|", "\n", "    ", RowBox[{RowBox[{"\"Children\"", 
-                        "\[Rule]", "None"}], ",", "\n", "    ", RowBox[
-                       {"\"Body\"", "\[Rule]", "data"}], ",", "\n", "    ", 
-                      RowBox[{"\"Token\"", "->", "token"}], ",", "\n", 
-                      "    ", RowBox[{"\"Root\"", "\[Rule]", "False"}]}], 
-                    "\n", "    ", "|>"}]}], ";"}], "\n", RowBox[{
-                RowBox[{RowBox[{"MakeASTNode", "[", RowBox[{"\"Compound\"", 
-                      ",", " ", "data_", ",", " ", RowBox[{"token_:", 
-                        "None"}]}], "]"}], ":=", "\n", "  ", RowBox[
-                   {"<|", "\n", "    ", RowBox[{RowBox[{"\"Children\"", 
-                        "\[Rule]", RowBox[{"Flatten", "@", RowBox[{"{", 
-                          "data", "}"}]}]}], ",", "\n", "    ", RowBox[
-                       {"\"Body\"", "\[Rule]", "None"}], ",", "\n", "    ", 
-                      RowBox[{"\"Token\"", "->", "token"}], ",", "\n", 
-                      "    ", RowBox[{"\"Root\"", "\[Rule]", "False"}]}], 
-                    "\n", "    ", "|>"}]}], ";"}], "\n", RowBox[{
-                RowBox[{"MakeASTNode", "[", "data_", "]"}], ":=", "\n", "  ", 
-                RowBox[{"If", "[", RowBox[{RowBox[{"!", RowBox[{"KeyExistsQ", 
-                        "[", RowBox[{"data", ",", " ", "\"Children\""}], 
-                        "]"}]}], ",", "\n", "  ", "  ", RowBox[
-                     {"MakeASTNode", "[", "\n", "  ", "    ", RowBox[
-                       {RowBox[{"If", "[", RowBox[{RowBox[{RowBox[{"data", 
-                          "[", "\"TokenType\"", "]"}], "===", 
+                       {"token_:", "None"}], ",", " ", RowBox[{"props", ":", 
+                        RowBox[{"_", "?", "AssociationQ"}], ":", RowBox[
+                         {"<|", "|>"}]}]}], "]"}], ":=", "\n", "  ", 
+                  RowBox[{"iMakeASTNode", "[", RowBox[{RowBox[{"{", "}"}], 
+                      ",", " ", "\n", "    ", RowBox[{"If", "[", RowBox[
+                         {RowBox[{"AssociationQ", "@", "data"}], ",", "\n", 
+                          "      ", RowBox[{RowBox[{"Lookup", "[", RowBox[
+                          {"data", ",", " ", "\"DataFunction\"", ",", " ", 
+                          RowBox[{"(", RowBox[{RowBox[{"#", "[", "\"Body\"", 
+                          "]"}], "&"}], ")"}]}], "]"}], "@", "data"}], ",", 
+                          "\n", "      ", "data"}], "\n", "      ", "]"}], 
+                      ",", " ", "\n", "    ", "token", ",", " ", "\n", 
+                      "    ", "props"}], "\n", "    ", "]"}]}], ";"}], "\n", 
+              RowBox[{RowBox[{RowBox[{"MakeASTNode", "[", RowBox[
+                     {"\"Compound\"", ",", " ", "data_", ",", " ", RowBox[
+                       {"token_:", "None"}], ",", " ", RowBox[{"props", ":", 
+                        RowBox[{"_", "?", "AssociationQ"}], ":", RowBox[
+                         {"<|", "|>"}]}]}], "]"}], ":=", "\n", "  ", 
+                  RowBox[{"iMakeASTNode", "[", "\n", "    ", RowBox[
+                     {RowBox[{"Map", "[", "\n", "      ", RowBox[{RowBox[
+                          {RowBox[{"If", "[", RowBox[{RowBox[{"!", RowBox[
+                          {"AssociationQ", "[", "#", "]"}]}], ",", " ", "\n", 
+                          "  ", "      ", RowBox[{"MakeASTNode", "[", RowBox[
+                          {"\"Atomic\"", ",", " ", "#", ",", " ", "None", 
+                          ",", " ", RowBox[{"<|", "|>"}]}], "]"}], ",", " ", 
+                          "#"}], "]"}], "&"}], ",", " ", "\n", "  ", "    ", 
+                          RowBox[{"Flatten", "@", RowBox[{"{", "data", 
+                          "}"}]}]}], "\n", "      ", "]"}], ",", "\n", 
+                      "     ", "None", ",", "\n", "     ", "token", ",", 
+                      "\n", "     ", "props"}], "\n", "     ", "]"}]}], 
+                ";"}], "\n", RowBox[{RowBox[{RowBox[{"MakeASTNode", "[", 
+                    "data_Association", "]"}], ":=", "\n", "  ", 
+                  RowBox[{"If", "[", RowBox[{RowBox[{"!", RowBox[
+                         {"KeyExistsQ", "[", RowBox[{"data", ",", " ", 
+                          "\"Children\""}], "]"}]}], ",", "\n", "  ", "  ", 
+                      RowBox[{"MakeASTNode", "[", "\n", "  ", "    ", 
+                        RowBox[{RowBox[{"If", "[", RowBox[{RowBox[{RowBox[
+                          {"data", "[", "\"TokenType\"", "]"}], "===", 
                           "\"BlockOpener\""}], ",", " ", "\"Compound\"", ",", 
-                          " ", "\"Atomic\""}], "]"}], ",", "\n", "  ", 
-                        "    ", "data", ",", "\n", "  ", "    ", RowBox[
-                         {"data", "[", "\"Token\"", "]"}]}], "\n", "  ", 
-                      "    ", "]"}], ",", "\n", "  ", "  ", "data"}], "\n", 
-                  "  ", "  ", "]"}]}]}], "CodeInput"]}, Closed]], 
+                          " ", "\"Atomic\""}], "]"}], ",", "\n", "      ", 
+                          "data", ",", "\n", "      ", RowBox[{"data", "[", 
+                          "\"Token\"", "]"}], ",", "\n", "      ", "data"}], 
+                        "\n", "      ", "]"}], ",", "\n", "    ", "data"}], 
+                    "\n", "    ", "]"}]}], ";"}], "\n", RowBox[{
+                RowBox[{RowBox[{"MakeASTNode", "[", "node_ASTNode", "]"}], 
+                  ":=", "\n", "  ", RowBox[{"Normal", "[", "node", "]"}]}], 
+                ";"}], "\n", RowBox[{RowBox[{"MakeASTNode", "[", 
+                  "ast_ASTObject", "]"}], ":=", "\n", "  ", RowBox[
+                 {"ast", "[", "\"Tree\"", "]"}]}]}], "CodeInput"]}, Open]], 
         Cell[CellGroupData[{Cell["\[LeftCeiling]GetASTNode\[RightFloor]", 
             "CodeSubsubsection", Evaluatable -> True], 
-           Cell[BoxData[{RowBox[{RowBox[{RowBox[{"GetASTNode", "[", 
+           Cell[BoxData[RowBox[{RowBox[{"nodePos", "[", RowBox[{"position", 
+                   ":", RowBox[{"{", "__Integer", "}"}]}], "]"}], ":=", "\n", 
+               "  ", RowBox[{"Prepend", "[", RowBox[{RowBox[{"Riffle", "[", 
+                     RowBox[{"position", ",", " ", "\"Children\""}], "]"}], 
+                   ",", " ", "\"Children\""}], "]"}]}]], "CodeInput"], 
+           Cell[BoxData[{RowBox[{RowBox[{"GetASTNode", "//", "Clear"}], 
+                ";"}], "\n", RowBox[{RowBox[{RowBox[{"GetASTNode", "[", 
                     RowBox[{"ast_Association", ",", " ", RowBox[{"part", ":", 
-                        RowBox[{"{", "__Integer", "}"}]}]}], "]"}], ":=", 
-                  "\n", "  ", RowBox[{"ast", "[", RowBox[{"[", RowBox[
-                       {"Sequence", "@@", RowBox[{"Riffle", "[", RowBox[
-                          {"part", ",", " ", "\"Children\""}], "]"}]}], 
-                      "]"}], "]"}]}], ";"}], "\n", RowBox[{RowBox[
+                        "__Integer"}]}], "]"}], ":=", "\n", "  ", 
+                  RowBox[{"Module", "[", RowBox[{RowBox[{"{", "data", "}"}], 
+                      ",", "\n", "    ", RowBox[{RowBox[{"data", "=", "\n", 
+                          "      ", RowBox[{"Quiet", "[", "\n", "        ", 
+                          RowBox[{RowBox[{"Check", "[", "\n", "          ", 
+                          RowBox[{RowBox[{"ast", "[", RowBox[{"[", RowBox[
+                          {"Sequence", "@@", RowBox[{"nodePos", "[", RowBox[
+                          {"{", "part", "}"}], "]"}]}], "]"}], "]"}], ",", 
+                          "\n", "          ", "$Failed", ",", "\n", 
+                          "          ", RowBox[{"Part", "::", "partw"}]}], 
+                          "\n", "          ", "]"}], ",", "\n", "        ", 
+                          RowBox[{"Part", "::", "partw"}]}], "\n", 
+                          "        ", "]"}]}], ";", "\n", "    ", RowBox[
+                         {RowBox[{"ASTNode", "@", "data"}], "/;", RowBox[
+                          {"AssociationQ", "[", "data", "]"}]}]}]}], "\n", 
+                    "    ", "]"}]}], ";"}], "\n", RowBox[{RowBox[
+                 {RowBox[{"GetASTNode", "[", RowBox[{"ast_ASTNode", ",", " ", 
+                      RowBox[{"part", ":", "__Integer"}]}], "]"}], ":=", 
+                  "\n", "  ", RowBox[{"GetASTNode", "[", RowBox[
+                     {RowBox[{"Normal", "[", "ast", "]"}], ",", " ", 
+                      "part"}], "]"}]}], ";"}], "\n", RowBox[{RowBox[
                  {"GetASTNode", "[", RowBox[{"ast_ASTObject", ",", " ", 
-                    "part_"}], "]"}], ":=", "\n", "  ", RowBox[{"GetASTNode", 
-                  "[", RowBox[{RowBox[{"ast", "[", "\"Tree\"", "]"}], ",", 
-                    " ", "part"}], "]"}]}]}], "CodeInput"]}, Closed]], 
-        Cell[CellGroupData[{Cell["\[LeftCeiling]AddASTNodeData\[RightFloor]", 
+                    RowBox[{"part", ":", "__Integer"}]}], "]"}], ":=", "\n", 
+                "  ", RowBox[{"GetASTNode", "[", RowBox[{RowBox[{"ast", "[", 
+                      "\"Tree\"", "]"}], ",", " ", "part"}], "]"}]}]}], 
+            "CodeInput"]}, Closed]], Cell[CellGroupData[
+          {Cell["\[LeftCeiling]ReplaceASTNode\[RightFloor]", 
             "CodeSubsubsection", Evaluatable -> True], 
-           Cell[BoxData[RowBox[{RowBox[{"AddASTNodeData", "[", RowBox[
-                  {"node_", ",", " ", "data_"}], "]"}], ":=", "\n", "  ", 
-               RowBox[{"ReplacePart", "[", RowBox[{"node", ",", " ", 
-                   RowBox[{"\"Children\"", "\[Rule]", RowBox[{"Append", "[", 
-                       RowBox[{RowBox[{"node", "[", "\"Children\"", "]"}], 
-                         ",", " ", "data"}], "]"}]}]}], "]"}]}]], 
-            "CodeInput"]}, Open]], Cell[CellGroupData[
-          {Cell["\[LeftCeiling]AddASTNode\[RightFloor]", "CodeSubsubsection", 
-            Evaluatable -> True], Cell["\[LeftCeiling]\n\tBasically this \
-needs to be able to determine what the type of data is (syntactically), \
-whether that means it should become an atomic or compound node, and then \
-insert in the AST at the current node position\n\t\n\tThe tree argument can \
-also actually just be a node\n\[RightFloor]", "Text", Evaluatable -> True], 
-           Cell[BoxData[RowBox[{RowBox[{"AddASTNode", "[", RowBox[{"tree_", 
-                   ",", " ", "data_"}], "]"}], ":=", "\n", "  ", RowBox[
-                {"AddASTNodeData", "[", RowBox[{"tree", ",", " ", 
-                   RowBox[{"MakeASTNode", "[", "data", "]"}]}], "]"}]}]], 
-            "CodeInput"]}, Open]], Cell[CellGroupData[
+           Cell[BoxData[{RowBox[{RowBox[{RowBox[{"ReplaceASTNode", "[", 
+                    RowBox[{"tree_", ",", " ", RowBox[{"position", ":", 
+                        RowBox[{"{", "__Integer", "}"}]}], ",", " ", 
+                      "data_"}], "]"}], ":=", "\n", "  ", RowBox[
+                   {"ReplacePart", "[", RowBox[{"tree", ",", " ", "\n", 
+                      "    ", RowBox[{RowBox[{"nodePos", "[", "position", 
+                          "]"}], "->", RowBox[{"MakeASTNode", "[", "data", 
+                          "]"}]}]}], "\n", "    ", "]"}]}], ";"}], "\n", 
+              RowBox[{RowBox[{"ReplaceASTNode", "[", RowBox[{"ast_ASTNode", 
+                    ",", " ", RowBox[{"position", ":", RowBox[{"{", 
+                        "__Integer", "}"}]}], ",", " ", "data_"}], "]"}], 
+                ":=", "\n", "  ", RowBox[{"InterfaceModify", "[", 
+                  RowBox[{"ASTNode", ",", "\n", "    ", "ast", ",", " ", 
+                    "\n", "    ", RowBox[{RowBox[{"Insert", "[", RowBox[
+                         {"#", ",", " ", RowBox[{"ReplaceASTNode", "[", 
+                          RowBox[{"#", ",", " ", "position", ",", " ", 
+                          "data"}], "]"}], ",", " ", "\"Children\""}], "]"}], 
+                      "&"}]}], "\n", "    ", "]"}]}], "\n", 
+              RowBox[{RowBox[{"ReplaceASTNode", "[", RowBox[{"ast_ASTObject", 
+                    ",", " ", RowBox[{"position", ":", RowBox[{"{", 
+                        "__Integer", "}"}]}], ",", " ", "data_"}], "]"}], 
+                ":=", "\n", "  ", RowBox[{"InterfaceModify", "[", 
+                  RowBox[{"ASTObject", ",", "\n", "    ", "ast", ",", " ", 
+                    "\n", "    ", RowBox[{RowBox[{"Insert", "[", RowBox[
+                         {"#", ",", " ", RowBox[{"ReplaceASTNode", "[", 
+                          RowBox[{RowBox[{"#", "[", "\"Tree\"", "]"}], ",", 
+                          " ", "position", ",", " ", "data"}], "]"}], ",", 
+                          " ", "\"Tree\""}], "]"}], "&"}]}], "\n", "    ", 
+                  "]"}]}], "\n", RowBox[{RowBox[{"ReplaceASTNode", "[", 
+                  RowBox[{"a_", ",", " ", "pos_Integer", ",", " ", "d_"}], 
+                  "]"}], ":=", "\n", "   ", RowBox[{"ReplaceASTNode", "[", 
+                  RowBox[{"a", ",", " ", RowBox[{"{", "pos", "}"}], ",", " ", 
+                    "d"}], "]"}]}]}], "CodeInput"]}, Closed]], 
+        Cell[CellGroupData[{Cell["\[LeftCeiling]AddASTNode\[RightFloor]", 
+            "CodeSubsubsection", Evaluatable -> True], Cell["\[LeftCeiling]\n\
+\tBasically this needs to be able to determine what the type of data is \
+(syntactically), whether that means it should become an atomic or compound \
+node, and then insert in the AST at the current node position\n\t\n\tThe tree \
+argument can also actually just be a node\n\[RightFloor]", "Text", 
+            Evaluatable -> True], Cell[BoxData[
+             {RowBox[{RowBox[{RowBox[{"AddASTNode", "[", RowBox[{"tree_", 
+                      ",", " ", "data_", ",", " ", RowBox[{"position", ":", 
+                        RowBox[{"{", "__Integer", "}"}], ":", RowBox[
+                         {"{", RowBox[{"-", "1"}], "}"}]}]}], "]"}], ":=", 
+                  "\n", "  ", RowBox[{"AddASTNodeData", "[", RowBox[
+                     {"tree", ",", " ", RowBox[{"MakeASTNode", "[", "data", 
+                        "]"}]}], "]"}]}], ";"}], "\n", RowBox[{
+                RowBox[{"AddASTNode", "[", RowBox[{"ast_ASTNode", ",", " ", 
+                    "data_", ",", " ", RowBox[{"position", ":", RowBox[
+                       {"{", "__Integer", "}"}], ":", RowBox[{"{", RowBox[
+                         {"-", "1"}], "}"}]}]}], "]"}], ":=", "\n", "  ", 
+                RowBox[{"InterfaceModify", "[", RowBox[{"ASTNode", ",", "\n", 
+                    "    ", "ast", ",", " ", "\n", "    ", RowBox[
+                     {RowBox[{"Insert", "[", RowBox[{"#", ",", " ", RowBox[
+                          {"AddASTNode", "[", RowBox[{"#", ",", " ", "data", 
+                          ",", " ", "position"}], "]"}], ",", " ", 
+                          "\"Children\""}], "]"}], "&"}]}], "\n", "    ", 
+                  "]"}]}], "\n", RowBox[{RowBox[{RowBox[{"AddASTNode", "[", 
+                    RowBox[{"ast_ASTObject", ",", " ", "data_", ",", " ", 
+                      RowBox[{"position", ":", RowBox[{"{", "__Integer", 
+                          "}"}], ":", RowBox[{"{", RowBox[{"-", "1"}], 
+                          "}"}]}]}], "]"}], ":=", "\n", "  ", RowBox[
+                   {"InterfaceModify", "[", RowBox[{"ASTObject", ",", "\n", 
+                      "    ", "ast", ",", " ", "\n", "    ", RowBox[
+                       {RowBox[{"Insert", "[", RowBox[{"#", ",", " ", RowBox[
+                          {"AddASTNode", "[", RowBox[{RowBox[{"#", "[", 
+                          "\"Tree\"", "]"}], ",", " ", "data", ",", " ", 
+                          "position"}], "]"}], ",", " ", "\"Tree\""}], "]"}], 
+                        "&"}]}], "\n", "    ", "]"}]}], ";"}], "\n", 
+              RowBox[{" ", RowBox[{RowBox[{"AddASTNode", "[", RowBox[
+                     {"a_", ",", " ", "d_", ",", " ", "pos_Integer"}], "]"}], 
+                  ":=", "\n", "   ", RowBox[{"AddASTNode", "[", RowBox[
+                     {"a", ",", " ", "d", ",", " ", RowBox[{"{", "pos", 
+                        "}"}]}], "]"}]}]}]}], "CodeInput"], 
+           Cell[CellGroupData[
+             {Cell["\[LeftCeiling]AddASTNodeData\[RightFloor]", 
+               "CodeSubsubsubsection", Evaluatable -> True], 
+              Cell["\[LeftCeiling]\n\tLittle function to add a node to a node \
+or to an AST at the end\n\[RightFloor]", "Text", Evaluatable -> True], 
+              Cell[BoxData[{RowBox[{"AddASTNodeData", "//", "Clear"}], "\n", 
+                 RowBox[{RowBox[{RowBox[{"AddASTNodeData", "[", RowBox[
+                        {"node_Association", ",", " ", "data_List", ",", " ", 
+                         RowBox[{"position", ":", RowBox[{"{", "__Integer", 
+                          "}"}], ":", RowBox[{"{", RowBox[{"-", "1"}], 
+                          "}"}]}]}], "]"}], ":=", "\n", "  ", RowBox[
+                      {"Block", "[", RowBox[{RowBox[{"{", "$wrap", "}"}], 
+                         ",", "\n", "    ", RowBox[{"With", "[", RowBox[
+                          {RowBox[{"{", RowBox[{"pos", "=", RowBox[{"Most", 
+                          "@", RowBox[{"nodePos", "[", "position", "]"}]}]}], 
+                          "}"}], ",", "\n", "      ", RowBox[{"ReplacePart", 
+                          "[", RowBox[{"node", ",", " ", "\n", "        ", 
+                          RowBox[{"pos", "\[Rule]", "\n", "          ", 
+                          RowBox[{"Replace", "[", "\n", "            ", 
+                          RowBox[{RowBox[{"Insert", "[", RowBox[{RowBox[
+                          {"node", "[", RowBox[{"[", RowBox[{"Sequence", 
+                          "@@", "pos"}], "]"}], "]"}], ",", " ", RowBox[
+                          {"$wrap", "[", "data", "]"}], ",", " ", RowBox[
+                          {"position", "[", RowBox[{"[", RowBox[{"-", "1"}], 
+                          "]"}], "]"}]}], "]"}], ",", "\n", "            ", 
+                          RowBox[{RowBox[{"{", RowBox[{"a___", ",", " ", 
+                          RowBox[{"$wrap", "[", RowBox[{"{", "d___", "}"}], 
+                          "]"}], ",", " ", "e___"}], "}"}], ":>", "\n", 
+                          "              ", RowBox[{"{", RowBox[{"a", ",", 
+                          " ", "d", ",", " ", "e"}], "}"}]}]}], "\n", 
+                          "            ", "]"}]}]}], "\n", "        ", 
+                          "]"}]}], "\n", "      ", "]"}]}], "\n", "    ", 
+                       "]"}]}], ";"}], "\n", RowBox[{" ", RowBox[
+                    {RowBox[{"AddASTNode", "[", RowBox[{"node_Association", 
+                         ",", " ", "data_", ",", " ", RowBox[{"position", 
+                          ":", RowBox[{"{", "__Integer", "}"}], ":", RowBox[
+                          {"{", RowBox[{"-", "1"}], "}"}]}]}], "]"}], ":=", 
+                     "\n", "  ", RowBox[{"Insert", "[", RowBox[{"node", ",", 
+                         " ", "data", ",", " ", RowBox[{"nodePos", "[", 
+                          "position", "]"}]}], "]"}]}]}]}], "CodeInput"]}, 
+             Closed]]}, Closed]], Cell[CellGroupData[
+          {Cell["\[LeftCeiling]PopASTNode\[RightFloor]", "CodeSubsubsection", 
+            Evaluatable -> True], Cell[BoxData[{RowBox[{"PopASTNode", "//", 
+                "Clear"}], "\n", RowBox[{RowBox[{RowBox[{"PopASTNode", "[", 
+                    RowBox[{"tree_Association", ",", " ", RowBox[{"position", 
+                        ":", RowBox[{"{", "__Integer", "}"}], ":", RowBox[
+                         {"{", RowBox[{"-", "1"}], "}"}]}]}], "]"}], ":=", 
+                  "\n", "  ", RowBox[{"Module", "[", "\n", "    ", 
+                    RowBox[{RowBox[{"{", "\n", "      ", RowBox[{RowBox[
+                          {"pos", "=", RowBox[{"nodePos", "[", "position", 
+                          "]"}]}], ",", "\n", "      ", "data"}], "\n", 
+                        "      ", "}"}], ",", "\n", "    ", RowBox[
+                       {RowBox[{"data", " ", "=", " ", RowBox[{"tree", "[", 
+                          RowBox[{"[", RowBox[{"Sequence", "@@", "pos"}], 
+                          "]"}], "]"}]}], ";", "\n", "    ", RowBox[
+                         {RowBox[{"{", RowBox[{RowBox[{"ASTNode", "[", 
+                          "data", "]"}], ",", " ", RowBox[{"Delete", "[", 
+                          RowBox[{"tree", ",", " ", "pos"}], "]"}]}], "}"}], 
+                          "/;", RowBox[{"AssociationQ", "[", "data", 
+                          "]"}]}]}]}], "\n", "    ", "]"}]}], ";"}], "\n", 
+              RowBox[{RowBox[{RowBox[{"PopASTNode", "[", RowBox[
+                     {"ast_ASTNode", ",", " ", RowBox[{"position", ":", 
+                        RowBox[{"{", "__Integer", "}"}], ":", RowBox[
+                         {"{", RowBox[{"-", "1"}], "}"}]}]}], "]"}], ":=", 
+                  "\n", "  ", RowBox[{"With", "[", RowBox[{RowBox[{"{", 
+                        RowBox[{"p", "=", RowBox[{"PopASTNode", "[", RowBox[
+                          {RowBox[{"Normal", "[", "ast", "]"}], ",", " ", 
+                          "position"}], "]"}]}], "}"}], ",", "\n", "    ", 
+                      RowBox[{RowBox[{"{", "\n", "      ", RowBox[{RowBox[
+                          {"p", "[", RowBox[{"[", "1", "]"}], "]"}], ",", 
+                          "\n", "      ", RowBox[{"InterfaceModify", "[", 
+                          RowBox[{"ASTNode", ",", "\n", "        ", "ast", 
+                          ",", " ", "\n", "  ", "      ", RowBox[{RowBox[
+                          {"p", "[", RowBox[{"[", "2", "]"}], "]"}], "&"}]}], 
+                          "\n", "        ", "]"}]}], "\n", "      ", "}"}], 
+                        "/;", RowBox[{"ListQ", "[", "p", "]"}]}]}], "\n", 
+                    "    ", "]"}]}], ";"}], "\n", RowBox[{RowBox[
+                 {RowBox[{"PopASTNode", "[", RowBox[{"ast_ASTObject", ",", 
+                      " ", RowBox[{"position", ":", RowBox[{"{", "__Integer", 
+                          "}"}], ":", RowBox[{"{", RowBox[{"-", "1"}], 
+                          "}"}]}]}], "]"}], ":=", "\n", "  ", RowBox[
+                   {"With", "[", RowBox[{RowBox[{"{", RowBox[{"p", "=", 
+                          RowBox[{"PopASTNode", "[", RowBox[{RowBox[{"ast", 
+                          "[", "\"Tree\"", "]"}], ",", " ", "position"}], 
+                          "]"}]}], "}"}], ",", "\n", "    ", RowBox[
+                       {RowBox[{"{", "\n", "      ", RowBox[{RowBox[{"p", 
+                          "[", RowBox[{"[", "1", "]"}], "]"}], ",", "\n", 
+                          "      ", RowBox[{"InterfaceModify", "[", RowBox[
+                          {"ASTObject", ",", "\n", "        ", "ast", ",", 
+                          " ", "\n", "        ", RowBox[{RowBox[{"Insert", 
+                          "[", RowBox[{"#", ",", " ", RowBox[{"p", "[", 
+                          RowBox[{"[", "2", "]"}], "]"}], ",", " ", 
+                          "\"Tree\""}], "]"}], "&"}]}], "\n", "        ", 
+                          "]"}]}], "\n", "      ", "}"}], "/;", RowBox[
+                         {"ListQ", "[", "p", "]"}]}]}], "\n", "    ", 
+                    "]"}]}], ";"}], "\n", RowBox[{RowBox[{"PopASTNode", "[", 
+                  RowBox[{"a_", ",", " ", "d_", ",", " ", "pos_Integer"}], 
+                  "]"}], ":=", "\n", "   ", RowBox[{"PopASTNode", "[", 
+                  RowBox[{"a", ",", " ", "d", ",", " ", RowBox[{"{", "pos", 
+                      "}"}]}], "]"}]}]}], "CodeInput"]}, Closed]], 
+        Cell[CellGroupData[
           {Cell["\[LeftCeiling]GetASTNodeProperty\[RightFloor]", 
             "CodeSubsubsection", Evaluatable -> True], Cell["\[LeftCeiling]\n\
 \tOnly supports a finite number of properties but is where new properties \
 should be put\n\[RightFloor]", "Text", Evaluatable -> True], 
            Cell[BoxData[{RowBox[{RowBox[{RowBox[{"GetASTNodeProperty", "[", 
-                    RowBox[{"tree_", ",", " ", "\"Children\""}], "]"}], ":=", 
-                  "\n", "  ", RowBox[{"tree", "[", "\"Children\"", "]"}]}], 
+                    RowBox[{"tree_", ",", " ", "\"ChildCount\""}], "]"}], 
+                  ":=", "\n", "  ", RowBox[{"Length", "@", RowBox[{"tree", 
+                      "[", "\"Children\"", "]"}]}]}], ";"}], "\n", 
+              RowBox[{RowBox[{RowBox[{"GetASTNodeProperty", "[", RowBox[
+                     {"tree_", ",", " ", "\"Children\""}], "]"}], ":=", "\n", 
+                  "  ", RowBox[{"tree", "[", "\"Children\"", "]"}]}], ";"}], 
+              "\n", RowBox[{RowBox[{RowBox[{"GetASTNodeProperty", "[", 
+                    RowBox[{"tree_", ",", " ", "\"Token\""}], "]"}], ":=", 
+                  "\n", "  ", RowBox[{"tree", "[", "\"Token\"", "]"}]}], 
                 ";"}], "\n", RowBox[{RowBox[{RowBox[{"GetASTNodeProperty", 
-                    "[", RowBox[{"tree_", ",", " ", "\"ChildCount\""}], 
-                    "]"}], ":=", "\n", "  ", RowBox[{"Length", "@", 
-                    RowBox[{"tree", "[", "\"Children\"", "]"}]}]}], ";"}]}], 
-            "CodeInput"]}, Open]]}, Open]], 
-     Cell[CellGroupData[{Cell["\[LeftCeiling]ASTNode\[RightFloor]", 
+                    "[", RowBox[{"tree_", ",", " ", "\"BlockType\""}], "]"}], 
+                  ":=", "\n", "  ", RowBox[{"tree", "[", "\"BlockType\"", 
+                    "]"}]}], ";"}]}], "CodeInput"]}, Closed]], 
+        Cell[CellGroupData[{Cell["\[LeftCeiling]$ASTNodeTypes\[RightFloor]", 
+            "CodeSubsubsection", Evaluatable -> True], 
+           Cell["If you add a new block type", "Text"], 
+           Cell[BoxData[RowBox[{RowBox[{"$ASTNodeTypes", "=", RowBox[
+                  {"{", "\n", "  ", RowBox[{"\"Default\"", ",", 
+                     "               ", RowBox[{"(*", " ", RowBox[{"A", " ", 
+                         "standard", " ", "unstructured", " ", "node", " ", 
+                         "with", " ", "children"}], " ", "*)"}], "\n", "  ", 
+                     "\"Complete\"", ",", "              ", RowBox[{"(*", 
+                       " ", RowBox[{"A", " ", "complete", " ", "atomic", " ", 
+                         "node", " ", "constructed", " ", "directly", " ", 
+                         "when", " ", "it", " ", "was", " ", "parsed"}], " ", 
+                       "*)"}], "\n", "  ", "\"Operator\"", ",", 
+                     "              ", RowBox[{"(*", " ", RowBox[{"A", " ", 
+                         "node", " ", "for", " ", "a", " ", "binary", " ", 
+                         "operator"}], " ", "*)"}], "\n", "  ", RowBox[
+                      {"{", RowBox[{"\"FixedLength\"", ",", " ", "_"}], 
+                       "}"}], ",", "      ", RowBox[{"(*", " ", RowBox[
+                        {"A", " ", "node", " ", "with", " ", "a", " ", 
+                         "fixed", " ", "number", " ", "of", " ", 
+                         "children"}], " ", "*)"}], "\n", "  ", RowBox[
+                      {"{", RowBox[{"\"Delimited\"", ",", " ", RowBox[
+                          {"{", RowBox[{"_", ",", " ", "_"}], "}"}]}], "}"}], 
+                     ",", "   ", RowBox[{"(*", " ", RowBox[{"A", " ", "node", 
+                         " ", "bracketed", " ", "by", " ", "two", " ", 
+                         "token", " ", "types"}], " ", "*)"}], "\n", "  ", 
+                     RowBox[{"{", RowBox[{"\"Structured\"", ",", " ", 
+                         RowBox[{"{", "__", "}"}]}], "}"}]}], "     ", 
+                   RowBox[{"(*", " ", RowBox[{"A", " ", "structured", " ", 
+                       "node", " ", "with", " ", "a", " ", "fixed", " ", 
+                       "set", " ", "of", " ", "token", " ", "types"}], " ", 
+                     "*)"}], "\n", "  ", "}"}]}], ";"}]], "CodeInput"]}, 
+          Open]], Cell[CellGroupData[
+          {Cell["\[LeftCeiling]CompleteASTNodeQ\[RightFloor]", 
+            "CodeSubsubsection", Evaluatable -> True], 
+           Cell[CellGroupData[{Cell["\[LeftCeiling]Structured\[RightFloor]", 
+               "CodeSubsubsubsection", Evaluatable -> True], Cell[BoxData[
+                RowBox[{RowBox[{RowBox[{"CompleteASTNodeQ", "[", RowBox[
+                       {"node_", ",", " ", RowBox[{"{", RowBox[
+                          {"\"Structured\"", ",", " ", RowBox[{"blocks", ":", 
+                          RowBox[{"{", "__", "}"}]}]}], "}"}], ",", " ", 
+                        RowBox[{"strict", ":", RowBox[{"True", "|", 
+                          "False"}], ":", "True"}]}], "]"}], ":=", "\n", 
+                    "  ", RowBox[{"structuredNodeMatchQ", "[", RowBox[
+                       {"node", ",", " ", "blocks", ",", " ", "strict"}], 
+                      "]"}]}], ";"}]], "CodeInput"]}, Open]], 
+           Cell[CellGroupData[{Cell["\[LeftCeiling]Delimited\[RightFloor]", 
+               "CodeSubsubsubsection", Evaluatable -> True], Cell[BoxData[
+                RowBox[{RowBox[{RowBox[{"CompleteASTNodeQ", "[", RowBox[
+                       {"node_", ",", " ", RowBox[{"{", RowBox[
+                          {"\"Delimited\"", ",", " ", RowBox[{"s", ":", 
+                          RowBox[{"{", RowBox[{"_", ",", " ", "_"}], 
+                          "}"}]}]}], "}"}], ",", " ", RowBox[{"strict", ":", 
+                          RowBox[{"True", "|", "False"}], ":", "True"}]}], 
+                      "]"}], ":=", "\n", "  ", RowBox[{"delimitedNodeMatchQ", 
+                      "[", RowBox[{"node", ",", " ", "s", ",", " ", 
+                        "strict"}], "]"}]}], ";"}]], "CodeInput"]}, Open]], 
+           Cell[CellGroupData[{Cell["\[LeftCeiling]FixedLength\[RightFloor]", 
+               "CodeSubsubsubsection", Evaluatable -> True], Cell[BoxData[
+                RowBox[{RowBox[{RowBox[{"CompleteASTNodeQ", "[", RowBox[
+                       {"node_", ",", " ", RowBox[{"{", RowBox[
+                          {"\"FixedLength\"", ",", " ", "n_"}], "}"}], ",", 
+                        " ", RowBox[{"strict", ":", RowBox[{"True", "|", 
+                          "False"}], ":", "True"}]}], "]"}], ":=", "\n", 
+                    "  ", RowBox[{RowBox[{"Length", "@", RowBox[
+                         {"GetASTNodeProperty", "[", RowBox[{"node", ",", 
+                          " ", "\"Children\""}], "]"}]}], "==", "n"}]}], 
+                  ";"}]], "CodeInput"]}, Open]], Cell[CellGroupData[
+             {Cell["\[LeftCeiling]Default/Complete\[RightFloor]", 
+               "CodeSubsubsubsection", Evaluatable -> True], Cell[BoxData[
+                RowBox[{RowBox[{RowBox[{"CompleteASTNodeQ", "[", RowBox[
+                       {"node_", ",", " ", RowBox[{"\"Default\"", "|", 
+                          "\"Complete\""}], ",", " ", RowBox[{"strict", ":", 
+                          RowBox[{"True", "|", "False"}], ":", "True"}]}], 
+                      "]"}], ":=", "\n", "  ", "True"}], ";"}]], 
+               "CodeInput"]}, Open]], Cell[CellGroupData[
+             {Cell["\[LeftCeiling]Operator\[RightFloor]", 
+               "CodeSubsubsubsection", Evaluatable -> True], Cell[BoxData[
+                RowBox[{RowBox[{RowBox[{"CompleteASTNodeQ", "[", RowBox[
+                       {"node_", ",", " ", "\"Operator\"", ",", " ", 
+                        RowBox[{"strict", ":", RowBox[{"True", "|", 
+                          "False"}], ":", "True"}]}], "]"}], ":=", "\n", 
+                    "  ", RowBox[{"CompleteASTNodeQ", "[", RowBox[{"node", 
+                        ",", " ", RowBox[{"{", RowBox[{"\"FixedLength\"", 
+                          ",", " ", "1"}], "}"}], ",", " ", "strict"}], 
+                      "]"}]}], ";"}]], "CodeInput"], Cell[BoxData[
+                {RowBox[{RowBox[{RowBox[{"CompleteASTNodeQ", "[", RowBox[
+                        {"node_", ",", " ", RowBox[{"e", ":", RowBox[
+                          {"Except", "[", RowBox[{"True", "|", "False"}], 
+                          "]"}]}], ",", " ", RowBox[{"strict", ":", RowBox[
+                          {"True", "|", "False"}], ":", "True"}]}], "]"}], 
+                     ":=", "\n", "  ", RowBox[{"If", "[", RowBox[{"strict", 
+                         ",", "\n", "    ", RowBox[{"PackageRaiseException", 
+                          "[", "\n", "      ", RowBox[{"Automatic", ","}], 
+                          "\n", "      ", "\n", "      ", "]"}]}], "\n", 
+                       "    ", "]"}]}], ";"}], "\n", RowBox[
+                  {RowBox[{"CompleteASTNodeQ", "[", RowBox[{"node_", ",", 
+                       " ", RowBox[{"strict", ":", RowBox[{"True", "|", 
+                          "False"}], ":", "True"}]}], "]"}], ":=", "\n", 
+                   "  ", RowBox[{"CompleteASTNodeQ", "[", RowBox[{"node", 
+                       ",", " ", RowBox[{"node", "[", "\"Type\"", "]"}], ",", 
+                       " ", "strict"}], "]"}]}]}], "CodeInput"]}, Open]], 
+           Cell[CellGroupData[
+             {Cell["\[LeftCeiling]structuredNodeMatchQ\[RightFloor]", 
+               "CodeSubsubsubsection", Evaluatable -> True], Cell[BoxData[
+                RowBox[{RowBox[{"structuredNodeMatchQ", "[", RowBox[
+                     {"node_", ",", " ", "blocks_", ",", " ", RowBox[
+                       {"strict", ":", RowBox[{"True", "|", "False"}], ":", 
+                        "True"}]}], "]"}], ":=", "\n", "  ", RowBox[
+                   {"Block", "[", "\n", "    ", RowBox[{RowBox[{"{", "\n", 
+                        "      ", RowBox[{RowBox[{"main", " ", "=", " ", 
+                          RowBox[{"GetASTNodeProperty", "[", RowBox[{"node", 
+                          ",", " ", "\"Token\""}], "]"}]}], ",", " ", "\n", 
+                          "      ", RowBox[{"n", " ", "=", " ", RowBox[
+                          {"DeleteCases", "[", RowBox[{RowBox[{RowBox[
+                          {RowBox[{"#", "[", "\"Token\"", "]"}], "&"}], "/@", 
+                          RowBox[{"GetASTNodeProperty", "[", RowBox[{"node", 
+                          ",", " ", "\"Children\""}], "]"}]}], ",", " ", 
+                          "None"}], "]"}]}]}], "\n", "      ", "}"}], ",", 
+                      "\n", "    ", RowBox[{RowBox[{"PrependTo", "[", 
+                          RowBox[{"n", ",", " ", "main"}], "]"}], ";", "\n", 
+                        "    ", RowBox[{"MapThread", "[", "\n", "      ", 
+                          RowBox[{RowBox[{RowBox[{"If", "[", RowBox[{RowBox[
+                          {"#", "=!=", "#2"}], ",", "\n", "        ", RowBox[
+                          {"If", "[", RowBox[{"strict", ",", " ", "\n", 
+                          "          ", RowBox[{"PackageRaiseException", "[", 
+                          RowBox[{"Automatic", ",", "\n", "  ", "          ", 
+                          "\"Expected token '``' got '``'\"", ",", " ", "\n", 
+                          "  ", "          ", "#2", ",", "\n", 
+                          "            ", "#"}], "\n", "            ", "]"}], 
+                          ",", "\n", "          ", RowBox[{"Return", "[", 
+                          RowBox[{"False", ",", " ", "Block"}], "]"}]}], 
+                          "\n", "          ", "]"}]}], "\n", "        ", 
+                          "]"}], "&"}], ",", "\n", "      ", RowBox[{"{", 
+                          "\n", "        ", RowBox[{RowBox[{"n", "[", RowBox[
+                          {"[", RowBox[{";;", RowBox[{"Min", "@", RowBox[
+                          {"{", RowBox[{RowBox[{"Length", "@", "n"}], ",", 
+                          " ", RowBox[{"Length", "@", "blocks"}]}], 
+                          "}"}]}]}], "]"}], "]"}], ",", "\n", "        ", 
+                          RowBox[{"blocks", "[", RowBox[{"[", RowBox[{";;", 
+                          RowBox[{"Min", "@", RowBox[{"{", RowBox[{RowBox[
+                          {"Length", "@", "n"}], ",", " ", RowBox[{"Length", 
+                          "@", "blocks"}]}], "}"}]}]}], "]"}], "]"}]}], "\n", 
+                          "        ", "}"}]}], "\n", "      ", "]"}], ";", 
+                        "\n", "    ", RowBox[{RowBox[{"Length", "@", 
+                          "blocks"}], "\[Equal]", RowBox[{"Length", "@", 
+                          "n"}]}]}]}], "\n", "    ", "]"}]}]], "CodeInput"]}, 
+             Closed]], Cell[CellGroupData[
+             {Cell["\[LeftCeiling]delimitedNodeMatchQ\[RightFloor]", 
+               "CodeSubsubsubsection", Evaluatable -> True], Cell[BoxData[
+                {RowBox[{RowBox[{RowBox[{"delimitedNodeMatchQ", "[", 
+                       RowBox[{"node_", ",", " ", "last_", ",", " ", RowBox[
+                          {"{", RowBox[{"start_", ",", " ", "end_"}], "}"}], 
+                         ",", " ", RowBox[{"strict", ":", RowBox[{"True", 
+                          "|", "False"}], ":", "True"}]}], "]"}], ":=", "\n", 
+                     "  ", RowBox[{"Block", "[", RowBox[{RowBox[{"{", "}"}], 
+                         ",", "\n", "    ", RowBox[{RowBox[{"If", "[", 
+                          RowBox[{RowBox[{RowBox[{"GetASTNodeProperty", "[", 
+                          RowBox[{"node", ",", " ", "\"Token\""}], "]"}], 
+                          "=!=", "start"}], ",", " ", "\n", "      ", RowBox[
+                          {"If", "[", RowBox[{"strict", ",", "\n", 
+                          "        ", RowBox[{"PackageRaiseException", "[", 
+                          RowBox[{"Automatic", ",", "\n", "  ", "  ", 
+                          "      ", "\"Expected opening token `` got `` in \
+delimited pair ('``', '``')\"", ",", "\n", "  ", "  ", "      ", "start", 
+                          ",", " ", RowBox[{"GetASTNodeProperty", "[", RowBox[
+                          {"node", ",", " ", "\"Token\""}], "]"}], ",", "\n", 
+                          "  ", "  ", "      ", "start", ",", " ", "end"}], 
+                          "\n", "          ", "]"}], ",", "\n", "        ", 
+                          RowBox[{"Return", "[", RowBox[{"False", ",", " ", 
+                          "Block"}], "]"}]}], "\n", "        ", "]"}]}], 
+                          "\n", "      ", "]"}], ";", "\n", "    ", RowBox[
+                          {RowBox[{"GetASTNodeProperty", "[", RowBox[{"last", 
+                          ",", " ", "\"Token\""}], "]"}], "===", "end"}]}]}], 
+                       "\n", "    ", "]"}]}], ";"}], "\n", RowBox[
+                  {RowBox[{RowBox[{"delimitedNodeMatchQ", "[", RowBox[
+                        {"node_", ",", " ", RowBox[{"{", RowBox[{"start_", 
+                          ",", " ", "end_"}], "}"}], ",", " ", RowBox[
+                          {"strict", ":", RowBox[{"True", "|", "False"}], 
+                          ":", "True"}]}], "]"}], ":=", "\n", "  ", 
+                     RowBox[{"delimitedNodeMatchQ", "[", RowBox[{"node", ",", 
+                         " ", "\n", "    ", RowBox[{RowBox[
+                          {"GetASTNodeProperty", "[", RowBox[{"node", ",", 
+                          " ", "\"Children\""}], "]"}], "[", RowBox[{"[", 
+                          RowBox[{"-", "1"}], "]"}], "]"}], ",", " ", 
+                         RowBox[{"{", RowBox[{"start", ",", " ", "end"}], 
+                          "}"}], ",", " ", "strict"}], "]"}]}], ";"}]}], 
+               "CodeInput"]}, Closed]]}, Open]], 
+        Cell[CellGroupData[{Cell["\[LeftCeiling]ASTNode\[RightFloor]", 
+            "CodeSubsubsection", Evaluatable -> True], 
+           Cell[BoxData[RowBox[{"RegisterInterface", "[", "\n", "  ", RowBox[
+                {"ASTNode", ",", "\n", "  ", RowBox[{"{", "\"Children\"", 
+                   "}"}], ",", "\n", "  ", RowBox[{"\"Constructor\"", "->", 
+                   "MakeASTNode"}], ",", "\n", "  ", RowBox[
+                  {"\"AccessorFunctions\"", "\[Rule]", "\n", "    ", 
+                   RowBox[{"<|", "\n", "      ", RowBox[{RowBox[{"\"Keys\"", 
+                         "\[Rule]", "getKey"}], ",", " ", "\n", "      ", 
+                       RowBox[{"\"Parts\"", "\[Rule]", "GetASTNode"}]}], 
+                     "\n", "      ", "|>"}]}]}], "\n", "  ", "]"}]], 
+            "CodeInput"], Cell["\[LeftCeiling]\n\tI\[CloseCurlyQuote]m \
+putting this here so I can eventually expand upon it if it turns out that OOP \
+for an AST is useful\n\[RightFloor]", "Text", Evaluatable -> True], 
+           Cell[BoxData[RowBox[{RowBox[{"getKey", "[", RowBox[
+                  {RowBox[{"ASTNode", "[", "a_", "]"}], ",", " ", "k_"}], 
+                 "]"}], ":=", RowBox[{"a", "[", "k", "]"}]}]], "CodeInput"], 
+           Cell[BoxData[{RowBox[{RowBox[{RowBox[{RowBox[{"InterfaceMethod", 
+                      "[", "ASTNode", "]"}], "@", "\n", "  ", RowBox[
+                     {RowBox[{"node_ASTNode", "[", "\"Insert\"", "]"}], "[", 
+                      "a__", "]"}]}], ":=", "\n", "    ", RowBox[
+                   {"AddASTNode", "[", RowBox[{"node", ",", " ", "a"}], 
+                    "]"}]}], ";"}], "\n", RowBox[{RowBox[
+                 {RowBox[{RowBox[{"InterfaceMethod", "[", "ASTNode", "]"}], 
+                    "@", "\n", "  ", RowBox[{RowBox[{"node_ASTNode", "[", 
+                        "\"Pop\"", "]"}], "[", "a__", "]"}]}], ":=", "\n", 
+                  "    ", RowBox[{"PopASTNode", "[", RowBox[{"node", ",", 
+                      " ", "a"}], "]"}]}], ";"}], "\n", RowBox[{
+                RowBox[{RowBox[{RowBox[{"InterfaceMethod", "[", "ASTNode", 
+                      "]"}], "@", "\n", "  ", RowBox[{RowBox[{"node_ASTNode", 
+                        "[", "\"Replace\"", "]"}], "[", RowBox[{"pos_", ",", 
+                        " ", "a_"}], "]"}]}], ":=", "\n", "    ", 
+                  RowBox[{"ReplaceASTNode", "[", RowBox[{"node", ",", " ", 
+                      "pos", ",", " ", "a"}], "]"}]}], ";"}]}], "CodeInput"], 
+           Cell[BoxData[{RowBox[{RowBox[{RowBox[{RowBox[{"InterfaceMethod", 
+                      "[", "ASTNode", "]"}], "@", "\n", "  ", RowBox[
+                     {RowBox[{"node_ASTNode", "[", "\"Walk\"", "]"}], "[", 
+                      "a___", "]"}]}], ":=", "\n", "    ", RowBox[{"WalkAST", 
+                    "[", RowBox[{"node", ",", " ", "a"}], "]"}]}], ";"}], 
+              "\n", RowBox[{RowBox[{RowBox[{RowBox[{"InterfaceMethod", "[", 
+                      "ASTNode", "]"}], "@", "\n", "  ", RowBox[
+                     {RowBox[{"node_ASTNode", "[", "\"Format\"", "]"}], "[", 
+                      "a___", "]"}]}], ":=", "\n", "    ", RowBox[
+                   {"FormatAST", "[", RowBox[{"node", ",", " ", "a"}], 
+                    "]"}]}], ";"}]}], "CodeInput"]}, Open]]}, Open]], 
+     Cell[CellGroupData[{Cell["\[LeftCeiling]AST Functions\[RightFloor]", 
          "CodeSubsection", Evaluatable -> True], 
-        Cell[BoxData[RowBox[{"RegisterInterface", "[", "\n", "  ", 
-            RowBox[{"ASTNode", ",", "\n", "  ", RowBox[{"{", RowBox[
-                 {"\"Children\"", ",", " ", "\"Root\"", ",", " ", 
-                  "\"Token\""}], "}"}], ",", "\n", "  ", RowBox[{
-                "\"Constructor\"", "->", "MakeASTNode"}]}], "\n", "  ", 
-            "]"}]], "CodeInput"], Cell["\[LeftCeiling]\n\tI\[CloseCurlyQuote]\
-m putting this here so I can eventually expand upon it if it turns out that \
-OOP for an AST is useful\n\[RightFloor]", "Text", Evaluatable -> True]}, 
-       Open]], Cell[BoxData[RowBox[{RowBox[{"End", "[", "]"}], ";"}]], 
+        Cell[CellGroupData[{Cell["\[LeftCeiling]WalkAST\[RightFloor]", 
+            "CodeSubsubsection", Evaluatable -> True], Cell["\[LeftCeiling]\n\
+\nWe\[CloseCurlyQuote]ll provide like two events?\n\t- \
+\[OpenCurlyDoubleQuote]EnterNode\[CloseCurlyDoubleQuote]\n\t- \
+\[OpenCurlyDoubleQuote]ProcessNode\[CloseCurlyDoubleQuote]\n\t- \
+\[OpenCurlyDoubleQuote]ExitNode\[CloseCurlyDoubleQuote]\n\t\n\[RightFloor]", 
+            "Text", Evaluatable -> True], Cell[CellGroupData[
+             {Cell["\[LeftCeiling]walkASTNodeDF\[RightFloor]", 
+               "CodeSubsubsubsection", Evaluatable -> True], Cell[BoxData[
+                RowBox[{RowBox[{RowBox[{"walkASTNodeDF", "[", RowBox[
+                       {"node_", ",", " ", RowBox[{"handlers", ":", RowBox[
+                          {"{", RowBox[{"body_", ",", " ", "enter_", ",", 
+                          " ", "exit_"}], "}"}]}]}], "]"}], ":=", "  ", "\n", 
+                    "  ", RowBox[{"Module", "[", RowBox[{RowBox[{"{", 
+                          RowBox[{RowBox[{"children", " ", "=", " ", RowBox[
+                          {"node", "[", "\"Children\"", "]"}]}], ",", " ", 
+                          "res"}], "}"}], ",", "\n", "    ", RowBox[
+                         {RowBox[{"enter", "[", "node", "]"}], ";", "\n", 
+                          "    ", RowBox[{"res", "=", "\n", "      ", RowBox[
+                          {"If", "[", RowBox[{RowBox[{"ListQ", "@", 
+                          "children"}], ",", "\n", "        ", RowBox[
+                          {"body", "[", "\n", "          ", RowBox[{RowBox[
+                          {RowBox[{RowBox[{"walkASTNodeDF", "[", RowBox[{"#", 
+                          ",", " ", "handlers"}], "]"}], "&"}], "/@", 
+                          "children"}], ",", " ", "\n", "          ", RowBox[
+                          {"node", "[", "]"}], ",", "\n", "          ", 
+                          RowBox[{"node", "[", "\"Token\"", "]"}], ",", " ", 
+                          "\n", "          ", "node"}], "\n", "          ", 
+                          "]"}], ",", "\n", "        ", RowBox[{"body", "[", 
+                          RowBox[{RowBox[{"node", "[", "\"Body\"", "]"}], 
+                          ",", " ", RowBox[{"node", "[", "\"Token\"", "]"}], 
+                          ",", " ", "node"}], "]"}]}], "\n", "        ", 
+                          "]"}]}], ";", "\n", "    ", RowBox[{"exit", "[", 
+                          "node", "]"}], ";", "\n", "    ", "res"}]}], "\n", 
+                      "    ", "]"}]}], ";"}]], "CodeInput"]}, Open]], 
+           Cell[CellGroupData[
+             {Cell["\[LeftCeiling]walkASTNodeBF\[RightFloor]", 
+               "CodeSubsubsubsection", Evaluatable -> True], Cell[BoxData[
+                RowBox[{RowBox[{RowBox[{"walkASTNodeBF", "[", RowBox[
+                       {"node_", ",", " ", RowBox[{"handlers", ":", RowBox[
+                          {"{", RowBox[{"body_", ",", " ", "enter_", ",", 
+                          " ", "exit_"}], "}"}]}]}], "]"}], ":=", "  ", "\n", 
+                    "  ", RowBox[{"Module", "[", RowBox[{RowBox[{"{", 
+                          RowBox[{RowBox[{"children", " ", "=", " ", RowBox[
+                          {"node", "[", "\"Children\"", "]"}]}], ",", " ", 
+                          "res"}], "}"}], ",", "\n", "    ", RowBox[
+                         {RowBox[{"enter", "[", "node", "]"}], ";", "\n", 
+                          "    ", RowBox[{"res", "=", "\n", "      ", RowBox[
+                          {"If", "[", RowBox[{RowBox[{"ListQ", "@", 
+                          "children"}], ",", "\n", "        ", RowBox[
+                          {"body", "[", RowBox[{RowBox[{RowBox[{RowBox[
+                          {"walkASTNodeDF", "[", RowBox[{"#", ",", " ", 
+                          "handlers"}], "]"}], "&"}], "/@", "children"}], 
+                          ",", " ", RowBox[{"node", "[", "\"Token\"", "]"}], 
+                          ",", " ", "node"}], "]"}], ",", "\n", "  ", 
+                          "      ", RowBox[{"body", "[", RowBox[{RowBox[
+                          {"node", "[", "\"Body\"", "]"}], ",", " ", RowBox[
+                          {"node", "[", "\"Token\"", "]"}], ",", " ", 
+                          "node"}], "]"}]}], "\n", "        ", "]"}]}], ";", 
+                          "\n", "    ", RowBox[{"exit", "[", "node", "]"}], 
+                          ";", "\n", "    ", "res"}]}], "\n", "    ", 
+                      "]"}]}], ";"}]], "CodeInput"]}, Open]], 
+           Cell[CellGroupData[{Cell["\[LeftCeiling]WalkAST\[RightFloor]", 
+               "CodeSubsubsubsection", Evaluatable -> True], Cell[BoxData[
+                {RowBox[{RowBox[{RowBox[{"Options", "[", "WalkAST", "]"}], 
+                     "=", "\n", "  ", RowBox[{"{", "\n", "    ", RowBox[
+                        {"Method", "\[Rule]", "\"DepthFirst\""}], "\n", 
+                       "    ", "}"}]}], ";"}], "\n", RowBox[
+                  {RowBox[{RowBox[{"WalkAST", "[", RowBox[{"ast_Association", 
+                         ",", " ", "visitFunctions_", ",", "\n", "  ", 
+                         RowBox[{"ops", ":", RowBox[{"OptionsPattern", "[", 
+                          "]"}]}]}], "\n", "  ", "]"}], ":=", "\n", "  ", 
+                     RowBox[{"Module", "[", "\n", "    ", RowBox[
+                        {RowBox[{"{", "\n", "      ", RowBox[{RowBox[
+                          {"enter", "=", RowBox[{"Lookup", "[", RowBox[
+                          {"visitFunctions", ",", " ", "\"EnterNode\"", ",", 
+                          " ", "None"}], "]"}]}], ",", "\n", "      ", 
+                          RowBox[{"exit", "=", RowBox[{"Lookup", "[", RowBox[
+                          {"visitFunctions", ",", " ", "\"ExitNode\"", ",", 
+                          " ", "None"}], "]"}]}], ",", "\n", "      ", 
+                          RowBox[{"body", "=", RowBox[{"Lookup", "[", RowBox[
+                          {"visitFunctions", ",", " ", "\"ProcessNode\"", 
+                          ",", " ", RowBox[{"#", "&"}]}], "]"}]}]}], "\n", 
+                          "      ", "}"}], ",", "\n", "    ", RowBox[
+                          {RowBox[{"If", "[", RowBox[{RowBox[{RowBox[
+                          {"OptionValue", "[", RowBox[{"WalkAST", ",", " ", 
+                          RowBox[{"FilterRules", "[", RowBox[{RowBox[{"{", 
+                          "ops", "}"}], ",", " ", "Method"}], "]"}], ",", 
+                          " ", "Method"}], "]"}], "===", 
+                          "\"BreadthFirst\""}], ",", "\n", "      ", 
+                          "walkASTNodeBF", ",", "\n", "      ", 
+                          "walkASTNodeDF"}], "\n", "      ", "]"}], "[", 
+                          RowBox[{"ast", ",", " ", RowBox[{"{", RowBox[
+                          {"body", ",", " ", "enter", ",", " ", "exit"}], 
+                          "}"}]}], "]"}]}], "\n", "    ", "]"}]}], ";"}], 
+                 "\n", RowBox[{RowBox[{RowBox[{"WalkAST", "[", RowBox[
+                        {"ast_ASTObject", ",", " ", "visitFunctions_", ",", 
+                         " ", RowBox[{"ops", ":", RowBox[{"OptionsPattern", 
+                          "[", "]"}]}]}], "]"}], ":=", "\n", "  ", RowBox[
+                      {"WalkAST", "[", RowBox[{RowBox[{"ast", "[", 
+                          "\"Tree\"", "]"}], ",", " ", "visitFunctions", ",", 
+                         " ", "ops"}], "]"}]}], ";"}], "\n", RowBox[
+                  {RowBox[{RowBox[{"WalkAST", "[", RowBox[{"ast_ASTNode", 
+                         ",", " ", "visitFunctions_", ",", " ", RowBox[
+                          {"ops", ":", RowBox[{"OptionsPattern", "[", 
+                          "]"}]}]}], "]"}], ":=", "\n", "  ", RowBox[
+                      {"WalkAST", "[", RowBox[{RowBox[{"Normal", "[", "ast", 
+                          "]"}], ",", " ", "visitFunctions", ",", " ", 
+                         "ops"}], "]"}]}], ";"}]}], "CodeInput"]}, Open]]}, 
+          Open]], Cell[CellGroupData[
+          {Cell["\[LeftCeiling]FormatAST\[RightFloor]", "CodeSubsubsection", 
+            Evaluatable -> True], Cell[BoxData[
+             {RowBox[{RowBox[{RowBox[{"Options", "[", "FormatAST", "]"}], 
+                  "=", "\n", "  ", RowBox[{"{", "\n", "    ", RowBox[
+                     {RowBox[{"\"OperatorStyle\"", "\[Rule]", 
+                        "\"OperatorStyle\""}], ",", "\n", "    ", RowBox[
+                       {"\"CommandStyle\"", "\[Rule]", "\"CommandStyle\""}], 
+                      ",", "\n", "    ", RowBox[{"\"BlockStyle\"", "\[Rule]", 
+                        "\"BlockStyle\""}], ",", "\n", "    ", RowBox[
+                       {"\"SeparatorStyle\"", "\[Rule]", 
+                        "\"SeparatorStyle\""}], ",", "\n", "    ", RowBox[
+                       {"\"StringStyle\"", "->", "\"StringStyle\""}], ",", 
+                      "\n", "    ", RowBox[{"\"CodeStyle\"", "\[Rule]", 
+                        "\"CodeStyle\""}]}], "\n", "    ", "}"}]}], ";"}], 
+              "\n", RowBox[{RowBox[{"FormatAST", "[", RowBox[{"ast_", ",", 
+                    " ", RowBox[{"customTokenStyles", ":", RowBox[{"_", "?", 
+                        "AssociationQ"}], ":", RowBox[{"<|", "|>"}]}], ",", 
+                    " ", RowBox[{"ops", ":", RowBox[{"OptionsPattern", "[", 
+                        "]"}]}]}], "]"}], ":=", "\n", "  ", RowBox[
+                 {RowBox[{"Replace", "[", RowBox[{"r_RowBox", 
+                      "\[RuleDelayed]", RowBox[{"RawBoxes", "[", "r", 
+                        "]"}]}], "]"}], "@", RowBox[{"WalkAST", "[", 
+                    RowBox[{"ast", ",", " ", "\n", "    ", RowBox[{"<|", 
+                        "\n", "      ", RowBox[{"\"ProcessNode\"", "->", 
+                          "\n", "  ", "      ", RowBox[{"formatASTBody", "[", 
+                          "\n", "  ", "        ", RowBox[{"Join", "[", "\n", 
+                          "  ", "          ", RowBox[{RowBox[{"Association", 
+                          "[", RowBox[{"Flatten", "[", RowBox[{"{", RowBox[
+                          {RowBox[{"Options", "[", "FormatAST", "]"}], ",", 
+                          " ", "ops"}], "}"}], "]"}], "]"}], ",", "\n", "  ", 
+                          "          ", "customTokenStyles"}], "\n", 
+                          "            ", "]"}], "\n", "          ", "]"}]}], 
+                        "\n", "      ", "|>"}]}], "\n", "    ", "]"}]}]}]}], 
+            "CodeInput"], Cell[BoxData[{RowBox[{RowBox[{RowBox[
+                   {RowBox[{"formatASTBody", "[", "styles_", "]"}], "[", 
+                    RowBox[{"l_List", ",", " ", "token_", ",", " ", 
+                      "node_"}], "]"}], ":=", "\n", "  ", RowBox[{"Switch", 
+                    "[", RowBox[{RowBox[{"node", "[", "\"BlockType\"", "]"}], 
+                      ",", "\n", "    ", "\"Operator\"", ",", "\n", "      ", 
+                      RowBox[{RowBox[{"Lookup", "[", RowBox[{"styles", ",", 
+                          " ", "token", ",", " ", "\n", "        ", RowBox[
+                          {RowBox[{"RowBox", "[", RowBox[{"Riffle", "[", 
+                          RowBox[{"#", ",", " ", RowBox[{"StyleBox", "[", 
+                          RowBox[{"#2", ",", " ", "#3"}], "]"}]}], "]"}], 
+                          "]"}], "&"}]}], "\n", "        ", "]"}], "[", 
+                        RowBox[{"l", ",", " ", RowBox[{"Replace", "[", 
+                          RowBox[{"token", ",", " ", RowBox[{RowBox[
+                          {"Except", "[", "_String", "]"}], "\[Rule]", 
+                          "\"\""}]}], "]"}], ",", " ", RowBox[{"styles", "[", 
+                          "\"OperatorStyle\"", "]"}]}], "]"}], ",", "\n", 
+                      "    ", RowBox[{"{", RowBox[{"\"Delimited\"", ",", " ", 
+                          RowBox[{"{", RowBox[{"token", ",", " ", "_"}], 
+                          "}"}]}], "}"}], ",", "\n", "      ", RowBox[
+                       {RowBox[{"Lookup", "[", RowBox[{"styles", ",", " ", 
+                          "token", ",", " ", "\n", "        ", RowBox[
+                          {RowBox[{"RowBox", "[", RowBox[{"Prepend", "[", 
+                          RowBox[{"#", ",", " ", RowBox[{"StyleBox", "[", 
+                          RowBox[{"#2", ",", " ", "#3"}], "]"}]}], "]"}], 
+                          "]"}], "&"}]}], "\n", "        ", "]"}], "[", 
+                        RowBox[{"l", ",", " ", RowBox[{"Replace", "[", 
+                          RowBox[{"token", ",", " ", RowBox[{RowBox[
+                          {"Except", "[", "_String", "]"}], "\[Rule]", 
+                          "\"\""}]}], "]"}], ",", " ", RowBox[{"styles", "[", 
+                          "\"BlockStyle\"", "]"}]}], "]"}], ",", "\n", 
+                      "    ", RowBox[{"{", RowBox[{"\"Structured\"", ",", 
+                          " ", "_"}], "}"}], ",", "\n", "      ", RowBox[
+                       {RowBox[{"Lookup", "[", RowBox[{"styles", ",", " ", 
+                          "token", ",", " ", "\n", "        ", RowBox[
+                          {RowBox[{"RowBox", "[", RowBox[{"Prepend", "[", 
+                          RowBox[{"#", ",", " ", RowBox[{"StyleBox", "[", 
+                          RowBox[{"#2", ",", " ", "#3"}], "]"}]}], "]"}], 
+                          "]"}], "&"}]}], "\n", "        ", "]"}], "[", 
+                        RowBox[{"l", ",", " ", RowBox[{"Replace", "[", 
+                          RowBox[{"token", ",", " ", RowBox[{RowBox[
+                          {"Except", "[", "_String", "]"}], "\[Rule]", 
+                          "\"\""}]}], "]"}], ",", " ", RowBox[{"styles", "[", 
+                          "\"CommandStyle\"", "]"}]}], "]"}], ",", "\n", 
+                      "    ", RowBox[{"{", RowBox[{"\"Delimited\"", ",", " ", 
+                          RowBox[{"{", RowBox[{"_", ",", " ", "token"}], 
+                          "}"}]}], "}"}], ",", "\n", "      ", RowBox[
+                       {RowBox[{"Lookup", "[", RowBox[{"styles", ",", " ", 
+                          "token", ",", " ", "\n", "        ", RowBox[
+                          {RowBox[{"Sequence", "@@", RowBox[{"Append", "[", 
+                          RowBox[{"#", ",", " ", RowBox[{"StyleBox", "[", 
+                          RowBox[{"#2", ",", " ", "#3"}], "]"}]}], "]"}]}], 
+                          "&"}]}], "\n", "        ", "]"}], "[", RowBox[
+                         {"l", ",", " ", RowBox[{"Replace", "[", RowBox[
+                          {"token", ",", " ", RowBox[{RowBox[{"Except", "[", 
+                          "_String", "]"}], "\[Rule]", "\"\""}]}], "]"}], 
+                          ",", " ", RowBox[{"styles", "[", "\"BlockStyle\"", 
+                          "]"}]}], "]"}], ",", "\n", "    ", "\"Complete\"", 
+                      ",", "\n", "      ", RowBox[{RowBox[{"Lookup", "[", 
+                          RowBox[{"styles", ",", " ", "token", ",", " ", 
+                          "\n", "        ", RowBox[{RowBox[{"Sequence", "@@", 
+                          RowBox[{"Map", "[", RowBox[{RowBox[{"With", "[", 
+                          RowBox[{RowBox[{"{", RowBox[{"s", "=", "#3"}], 
+                          "}"}], ",", RowBox[{RowBox[{"StyleBox", "[", RowBox[
+                          {"#", ",", " ", "s"}], "]"}], "&"}]}], "]"}], ",", 
+                          " ", "#"}], "]"}]}], "&"}]}], "\n", "        ", 
+                          "]"}], "[", RowBox[{"l", ",", " ", RowBox[
+                          {"Replace", "[", RowBox[{"token", ",", " ", RowBox[
+                          {RowBox[{"Except", "[", "_String", "]"}], 
+                          "\[Rule]", "\"\""}]}], "]"}], ",", " ", RowBox[
+                          {"styles", "[", "\"StringStyle\"", "]"}]}], "]"}], 
+                      ",", "\n", "    ", "\"Default\"", ",", "\n", "      ", 
+                      RowBox[{RowBox[{"Lookup", "[", RowBox[{"styles", ",", 
+                          " ", "token", ",", " ", "\n", "        ", RowBox[
+                          {RowBox[{"RowBox", "[", RowBox[{"Append", "[", 
+                          RowBox[{"#", ",", " ", RowBox[{"StyleBox", "[", 
+                          RowBox[{"#2", ",", " ", "#3"}], "]"}]}], "]"}], 
+                          "]"}], "&"}]}], "\n", "        ", "]"}], "[", 
+                        RowBox[{"l", ",", " ", RowBox[{"Replace", "[", 
+                          RowBox[{"token", ",", " ", RowBox[{RowBox[
+                          {"Except", "[", "_String", "]"}], "\[Rule]", 
+                          "\"\""}]}], "]"}], ",", " ", RowBox[{"styles", "[", 
+                          "\"SeparatorStyle\"", "]"}]}], "]"}], ",", "\n", 
+                      "    ", "_", ",", "\n", "      ", RowBox[{RowBox[
+                         {"Lookup", "[", RowBox[{"styles", ",", " ", "token", 
+                          ",", " ", "\n", "        ", RowBox[{RowBox[
+                          {"RowBox", "[", RowBox[{"Append", "[", RowBox[
+                          {"#", ",", " ", "#2"}], "]"}], "]"}], "&"}]}], 
+                          "\n", "        ", "]"}], "[", RowBox[{"l", ",", 
+                          " ", RowBox[{"Replace", "[", RowBox[{"token", ",", 
+                          " ", RowBox[{RowBox[{"Except", "[", "_String", 
+                          "]"}], "\[Rule]", "\"\""}]}], "]"}], ",", " ", 
+                          RowBox[{"styles", "[", "\"CodeStyle\"", "]"}]}], 
+                        "]"}]}], "\n", "    ", "]"}]}], ";"}], "\n", 
+              RowBox[{RowBox[{RowBox[{"formatASTBody", "[", "styles_", "]"}], 
+                  "[", RowBox[{"e_", ",", " ", "token_", ",", " ", "node_"}], 
+                  "]"}], ":=", "\n", "  ", RowBox[{RowBox[{"formatASTBody", 
+                    "[", "styles", "]"}], "[", RowBox[{RowBox[{"{", "e", 
+                      "}"}], ",", " ", RowBox[{"Replace", "[", RowBox[
+                       {"token", ",", " ", RowBox[{RowBox[{"Except", "[", 
+                          "_String", "]"}], "\[Rule]", "\"\""}]}], "]"}], 
+                    ",", " ", "node"}], "]"}]}]}], "CodeInput"]}, Closed]], 
+        Cell[CellGroupData[
+          {Cell["\[LeftCeiling]TrimASTWhitespace\[RightFloor]", 
+            "CodeSubsubsection", Evaluatable -> True], 
+           Cell[BoxData[RowBox[{RowBox[{RowBox[{"trimWhitespace", "[", 
+                   RowBox[{"body_", ",", " ", "token_", ",", " ", "node_"}], 
+                   "]"}], ":=", "\n", "  ", RowBox[{"If", "[", RowBox[
+                    {RowBox[{"StringQ", "@", "body"}], ",", " ", "\n", 
+                     "    ", RowBox[{"If", "[", RowBox[{RowBox[{RowBox[
+                          {"token", "===", "None"}], "&&", "\n", "        ", 
+                          RowBox[{"StringMatchQ", "[", RowBox[{"body", ",", 
+                          " ", RowBox[{RowBox[{"w", ":", "Whitespace"}], 
+                          "/;", RowBox[{"(", RowBox[{"StringFreeQ", "[", 
+                          RowBox[{"w", ",", " ", "\"\\n\""}], "]"}], 
+                          ")"}]}]}], "]"}]}], ",", "\n", "      ", "Nothing", 
+                         RowBox[{"(*", " ", RowBox[{"drop", " ", "the", " ", 
+                          "node", " ", "if", " ", RowBox[{"it", "'"}], "s", 
+                          " ", "literally", " ", "just", " ", "padding"}], 
+                          " ", "*)"}], ",", "\n", "      ", RowBox[
+                          {"ReplacePart", "[", RowBox[{"node", ",", " ", 
+                          "\n", "        ", RowBox[{"\"Body\"", "\[Rule]", 
+                          "\n", "          ", RowBox[{"StringReplace", "[", 
+                          RowBox[{"body", ",", " ", "\n", "            ", 
+                          RowBox[{"{", "\n", "              ", RowBox[{RowBox[
+                          {RowBox[{"\" \"", ".."}], "\[Rule]", "\"\""}], ",", 
+                          "\n", "              ", RowBox[{RowBox[{"\"\\n\"", 
+                          ".."}], "\[Rule]", "\"\\n\""}]}], "\n", 
+                          "              ", "}"}]}], "\n", "            ", 
+                          "]"}]}]}], "\n", "        ", " ", "]"}]}], 
+                       RowBox[{"(*", " ", RowBox[{"otherwise", " ", "just", 
+                          " ", "trim", " ", "the", " ", "whitespace"}], " ", 
+                         "*)"}], "\n", "      ", "]"}], ",", "\n", "    ", 
+                     RowBox[{"ReplacePart", "[", RowBox[{"node", ",", " ", 
+                         RowBox[{"\"Children\"", "\[Rule]", "body"}]}], 
+                       "]"}]}], RowBox[{"(*", " ", RowBox[{"actually", " ", 
+                       "applies", " ", "the", " ", "pruning", " ", "on", " ", 
+                       "the", " ", "higher", " ", "up", " ", "nodes"}], " ", 
+                     "*)"}], "\n", "    ", "]"}]}], ";"}]], "CodeInput"], 
+           Cell[BoxData[RowBox[{RowBox[{"TrimASTWhitespace", "[", "ast_", 
+                 "]"}], ":=", "\n", "  ", RowBox[{"ASTObject", "@", 
+                 RowBox[{"ast", "@", RowBox[{"\"Walk\"", "[", RowBox[
+                      {"<|", RowBox[{"\"ProcessNode\"", "\[Rule]", 
+                         "trimWhitespace"}], "|>"}], "]"}]}]}]}]], 
+            "CodeInput"]}, Closed]], Cell[CellGroupData[
+          {Cell["\[LeftCeiling]ASTJoin\[RightFloor]", "CodeSubsubsection", 
+            Evaluatable -> True], Cell["\[LeftCeiling]\n\tThis is gonna be a \
+somewhat hard one... \n\tGotta figure out how to merge two incomplete \
+ASTs\n\tIf complete obviously just add all the second one\[CloseCurlyQuote]s \
+nodes to the first one.\n\t\n\tProbably cleanest to write a RearrangeAST \
+function that will go through and find incomplete nodes\n\tand then arrange \
+as necessary...\n\t\n\tRequires that we move all the AST BlockTypes into the \
+Node API so that they can be checked there. \n\[RightFloor]", "Text", 
+            Evaluatable -> True]}, Open]]}, Open]], 
+     Cell[BoxData[RowBox[{RowBox[{"End", "[", "]"}], ";"}]], 
       "InputSection"]}, Open]], Cell["", "SectionSeparator"]}, 
  FrontEndVersion -> "12.0 for Mac OS X x86 (64-bit) (April 8, 2019)", 
  StyleDefinitions -> FrontEnd`FileName[{"BTools"}, "CodePackage.nb", 

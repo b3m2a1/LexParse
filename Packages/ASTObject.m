@@ -23,6 +23,25 @@ RegisterInterface[
 getKey[ASTObject[a_], k_]:=a[k]
 
 
+InterfaceMethod[ASTObject]@
+  ast_ASTObject["Insert"][a__]:=
+    AddASTNode[ast, a];
+InterfaceMethod[ASTObject]@
+  ast_ASTObject["Pop"][a__]:=
+    PopASTNode[ast, a];
+InterfaceMethod[ASTObject]@
+  ast_ASTObject["Replace"][pos_, a_]:=
+    ReplaceASTNode[ast, pos, a];
+
+
+InterfaceMethod[ASTObject]@
+  ast_ASTObject["Walk"][args___]:=WalkAST[ast, args]
+InterfaceMethod[ASTObject]@
+  ast_ASTObject["Format"][args___]:=FormatAST[ast, args];
+InterfaceMethod[ASTObject]@
+  ast_ASTObject["TrimWhitespace"][]:=TrimASTWhitespace[ast]
+
+
 End[];
 
 

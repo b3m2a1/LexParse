@@ -151,18 +151,22 @@ WithTokenizerCheckpoint~SetAttributes~HoldRest;
 
 
 
-readStringToken[tok_, escape_:"\\"][stream_, body_, token_]:=
+readStringToken//Clear;
+readStringToken[tok_, end_, escape_:"\\"][stream_, body_, token_]:=
   Module[
     {
+      sm = Replace[stream, {TokenStreamer[{_, s_, ___}]:>s, t_TokenStream:>t["Stream"]}],
       tmp,
-      str = Read[stream, Record, RecordSeparators->{tok}, NullRecords->True]
+      str,
+      escs = Alternatives@@Flatten[{escape}]
       },
-    While[StringQ[str]&&StringEndsQ[str, escape],
-      tmp = Read[stream, Record, RecordSeparators->{tok}, NullRecords->True];
+    str = Read[sm, Record, RecordSeparators->{end}, NullRecords->True];
+    While[StringQ[str]&&StringEndsQ[str, escs],
+      tmp = Read[sm, Record, RecordSeparators->{end}, NullRecords->True];
       If[tmp===EndOfFile, Break[]];
       str = str<>tok<>tmp;
       ];
-    str
+    LexerToken[stream, {body, tok<>str<>end}, tok]
     ]
 
 
@@ -189,6 +193,11 @@ readLookAhead[lookAheadDispatcher_, tokenPuller_][stream_, body_, token_]:=
 
 
 
+(* ::Subsubsubsection::Closed:: *)
+(*TokenStreamer*)
+
+
+
 TokenStreamer[t_TokenStream]:=
   Module[{stream=t["Stream"], spec=prepTokenHandlers@t["Tokens"]},
     TokenStreamer[stream, spec, t]
@@ -203,23 +212,87 @@ TokenStreamer[stream_, spec_, t_]:=
     }];
 
 
+(
+  tks:HoldPattern[TokenStreamer[{t_, stream_, handlers_, seps_, tokPuller_}]]
+  )@"Read"[n_]:=
+  WithTokenizerCheckpoint[
+    stream,
+    TokenStreamerRead[tks, n]
+    ];
+ (
+  tks:HoldPattern[TokenStreamer[{t_, stream_, handlers_, seps_, tokPuller_}]]
+  )@"Read"[]:=
+   (tks@"Read"[1])[[1]];
+ (
+  tks:HoldPattern[TokenStreamer[{t_, stream_, handlers_, seps_, tokPuller_}]]
+  )@"Peek"[n_]:=
+   WithTokenizerCheckpoint[
+     stream,
+     (ResetTokenizerCheckpoint[stream]; #)&@TokenStreamerRead[tks, n]
+     ];
+ (
+  tks:HoldPattern[TokenStreamer[{t_, stream_, handlers_, seps_, tokPuller_}]]
+  )@"Peek"[]:=
+   (tks@"Peek"[1])[[1]];
+
+
+(* ::Subsubsubsection::Closed:: *)
+(*readRecord*)
+
+
+
+If[!MatchQ[$unfortunatelyNecessary, _Language`ExpressionStore],
+  $unfortunatelyNecessary=Language`NewExpressionStore["<StreamBugBits>"];
+  ];
+
+
+alreadyReadOnce[stream_, seps_]:=
+  TrueQ[$unfortunatelyNecessary@"get"[stream, seps]]
+
+
+readRecordReal[stream_, seps_]:=
+  Read[stream, 
+    Record,
+    RecordSeparators->seps,
+    NullRecords->True
+    ];
+readRecord[stream_, seps_, sp_]:=
+  (* 
+        this works around a bug in InputStream where the stream 
+          can advance internally, but the StreamPosition doesn't 
+        *)
+  If[sp==0,
+    If[alreadyReadOnce[stream, seps],
+      SetStreamPosition[stream, 0];
+      readRecordReal[stream, seps];
+      readRecordReal[stream, seps],
+      $unfortunatelyNecessary@"put"[stream, seps, True];
+      readRecordReal[stream, seps]
+      ],
+    readRecordReal[stream, seps]
+    ];
+
+
+(* ::Subsubsubsection::Closed:: *)
+(*TokenStreamerRead*)
+
+
+
 TokenStreamerRead[TokenStreamer[{t_, stream_, handlers_, seps_, tokPuller_}], n_]:=
-  Module[{body, tmp, token, spos},
+  Module[{body, tmp, token, spos, sp},
     Table[
       token = $Failed;
       body = EndOfFile;
       Block[{}, (* just building a Return point *)
+        sp = StreamPosition[stream];
         While[token===$Failed,
-          If[StreamPosition[stream]==0,
+          If[sp==0,
             (* 
-                        we need a secondary handling mechanism to ensure
-                          that we don't miss tokens at the very start of the stream
-                        *)
+                            we need a secondary handling mechanism to ensure
+                              that we don't miss tokens at the very start of the stream
+                            *)
             tmp = 
-             Read[stream, Record,
-                RecordSeparators->seps,
-                NullRecords->True
-                ];
+             readRecord[stream, seps, sp];
             (* if we're at the end of the stream just bail *)
             If[tmp===EndOfFile,
               Return[
@@ -232,21 +305,23 @@ TokenStreamerRead[TokenStreamer[{t_, stream_, handlers_, seps_, tokPuller_}], n_
                 ]
               ];
             spos = StreamPosition[stream];
-            If[StringLength@tmp<spos (* we skipped a thing *),
+            If[StringLength@tmp<spos&&!alreadyReadOnce[stream, seps](* we skipped too far *),
               SetStreamPosition[stream, 0];
               token = tokPuller[stream];
               If[ListQ@token, 
                 body = token[[2]];
                 token = token[[1]],
                 body = "";
-                ]
+                ],
+              token = tokPuller[stream];
+              If[ListQ@token, 
+                tmp = tmp <> token[[2]];
+                token = token[[1]];
+                ];
+              body = If[StringQ@body, body<>tmp, tmp]
               ],
             (* standard mechanism a little bit simpler *)
-            tmp = 
-             Read[stream, Record,
-                RecordSeparators->seps,
-                NullRecords->True
-                ];
+            tmp = readRecord[stream, seps, sp];
             (* if we're at the end of the stream, again, just bail *)
             If[tmp===EndOfFile, 
               Return[
@@ -275,30 +350,6 @@ TokenStreamerRead[TokenStreamer[{t_, stream_, handlers_, seps_, tokPuller_}], n_
       n
       ]
     ]
-
-
-(
-  tks:HoldPattern[TokenStreamer[{t_, stream_, handlers_, seps_, tokPuller_}]]
-  )@"Read"[n_]:=
-  WithTokenizerCheckpoint[
-    stream,
-    TokenStreamerRead[tks, n]
-    ];
- (
-  tks:HoldPattern[TokenStreamer[{t_, stream_, handlers_, seps_, tokPuller_}]]
-  )@"Read"[]:=
-   (tks@"Read"[1])[[1]];
- (
-  tks:HoldPattern[TokenStreamer[{t_, stream_, handlers_, seps_, tokPuller_}]]
-  )@"Peek"[n_]:=
-   WithTokenizerCheckpoint[
-     stream,
-     (ResetTokenizerCheckpoint[stream]; #)&@TokenStreamerRead[tks, n]
-     ];
- (
-  tks:HoldPattern[TokenStreamer[{t_, stream_, handlers_, seps_, tokPuller_}]]
-  )@"Peek"[]:=
-   (tks@"Peek"[1])[[1]];
 
 
 (* ::Subsubsection::Closed:: *)
@@ -344,6 +395,11 @@ tokenTrie[strings_]:=
   addDefTok@groupToks[strings, 1]
 
 
+(* ::Subsubsubsection::Closed:: *)
+(*getTokenViaTrie*)
+
+
+
 getTokenViaTrie[stream_, trie_]:=
   (* keep walking through the trie until we find what token was returned *)
   Module[{c, t = trie, t2, i=1, sp = StreamPosition[stream]},
@@ -361,7 +417,6 @@ getTokenViaTrie[stream_, trie_]:=
       t = t2;
       i++
       ];
-    (*SetStreamPosition[stream, sp+1];*)
     t
     ]
 
@@ -393,11 +448,12 @@ pullTokenToo[stream_, tokTrie_, minTok_]:=
   Module[{tok, tmp, spos, spos2},
     spos = StreamPosition[stream];
     If[spos>0,
+      (* ensure that if we're in a word-type token a non-word preceded it *)
       tok = Read[stream, Character];
       spos2 = StreamPosition[stream];
-      If[StringMatchQ[tok, WordCharacter], 
+      If[StringQ@tok&&StringMatchQ[tok, WordCharacter], 
         SetStreamPosition[stream, spos-1];
-        If[!StringMatchQ[Read[stream, Character], WhitespaceCharacter],
+        If[StringMatchQ[Read[stream, Character], WordCharacter],
           SetStreamPosition[stream, spos2];
           Return[{$Failed, tok}, Module]
           ]
@@ -414,10 +470,13 @@ pullTokenToo[stream_, tokTrie_, minTok_]:=
         Return[{$Failed, tok}, Module]
         ]
       ];
-    If[spos>0, 
-      SetStreamPosition[stream, spos],
-      SetStreamPosition[stream, spos+1]
-      ];
+    SetStreamPosition[stream, spos];
+    (*Which[(* get stream ready for next Read call *)
+      StringQ[tok]&&StringLength[tok]>1, 
+        SetStreamPosition[stream, StreamPosition[stream]-1],
+      spos>0,
+        SetStreamPosition[stream, spos]
+      ]*);
     tok
     ]
 

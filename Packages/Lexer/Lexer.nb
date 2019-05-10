@@ -20,10 +20,27 @@ Notebook[{Cell[CellGroupData[{Cell["Lexer", "CodeSection"],
                    ";"}], "\n", RowBox[{RowBox[{RowBox[{"prepTokenSpec", "[", 
                        RowBox[{"{", RowBox[{"c_String", ",", " ", 
                           "\"String\""}], "}"}], "]"}], ":=", "\n", "  ", 
-                     "\n", RowBox[{RowBox[{"prepTokenSpec", "[", 
-                         "a_Association", "]"}], ":=", "\n", "  ", "a"}]}], 
-                   ";"}]}], "CodeInput"]}, Closed]], 
-           Cell[CellGroupData[
+                     RowBox[{"prepTokenSpec", "[", RowBox[{"{", RowBox[
+                          {"c", ",", " ", "\"String\"", ",", " ", "c", ",", 
+                          " ", "\"\\\\\""}], "}"}], "]"}]}], ";"}], "\n", 
+                 RowBox[{RowBox[{RowBox[{"prepTokenSpec", "[", RowBox[
+                        {"{", RowBox[{"c_String", ",", " ", "\"String\"", 
+                          ",", " ", "end_"}], "}"}], "]"}], ":=", "\n", "  ", 
+                     RowBox[{"prepTokenSpec", "[", RowBox[{"{", RowBox[
+                          {"c", ",", " ", "\"String\"", ",", " ", "end", ",", 
+                          " ", "\"\\\\\""}], "}"}], "]"}]}], ";"}], "\n", 
+                 RowBox[{RowBox[{RowBox[{"prepTokenSpec", "[", RowBox[
+                        {"{", RowBox[{"c_String", ",", " ", "\"String\"", 
+                          ",", " ", "end_", ",", " ", "escape_"}], "}"}], 
+                       "]"}], ":=", "\n", "  ", RowBox[{"<|", "\n", "    ", 
+                       RowBox[{RowBox[{"\"Token\"", "\[Rule]", "c"}], ",", 
+                         " ", "\n", "    ", RowBox[{"\"Handler\"", "\[Rule]", 
+                          RowBox[{"readStringToken", "[", RowBox[{"c", ",", 
+                          " ", "end", ",", " ", "escape"}], "]"}]}]}], "\n", 
+                       "    ", "|>"}]}], ";"}], "\n", RowBox[
+                  {RowBox[{RowBox[{"prepTokenSpec", "[", "a_Association", 
+                       "]"}], ":=", "\n", "  ", "a"}], ";"}]}], 
+               "CodeInput"]}, Open]], Cell[CellGroupData[
              {Cell["\[LeftCeiling]ConstructLexerObject\[RightFloor]", 
                "CodeSubsubsubsection", Evaluatable -> True], Cell[BoxData[
                 {RowBox[{RowBox[{RowBox[{"ConstructLexerObject", "[", "\n", 

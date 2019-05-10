@@ -23,6 +23,27 @@ Begin["`Private`"];
 normalizeTokenHandler//Clear
 
 
+(* ::Subsubsubsubsection::Closed:: *)
+(*BlockDelimiter*)
+
+
+
+normalizeTokenHandler[{a_String, a_String, ops___?OptionQ}]:=
+  Join[
+    normalizeTokenHandler[a],
+    <|
+      "TokenType"->"BlockDelimiter",
+      "BlockType"->{"Delimited", {a, a}},
+      ops
+      |>
+    ];
+
+
+(* ::Subsubsubsubsection::Closed:: *)
+(*Delimited*)
+
+
+
 normalizeTokenHandler[{a_String, b_String, ops___?OptionQ}]:=
   {
     Join[
@@ -40,18 +61,30 @@ normalizeTokenHandler[{a_String, b_String, ops___?OptionQ}]:=
         ops
         |>
       ]
-    }
+    };
+
+
+(* ::Subsubsubsubsection::Closed:: *)
+(*FixedLength*)
+
 
 
 normalizeTokenHandler[{a_String, n_Integer, ops___?OptionQ}]:=
   Join[
-      normalizeTokenHandler[a],
-      <|
-        "TokenType"->"BlockOpener",
-        "BlockType"->{"FixedLength", n},
-        ops
-        |>
-      ];
+    normalizeTokenHandler[a],
+    <|
+      "TokenType"->"BlockOpener",
+      "BlockType"->{"FixedLength", n},
+      ops
+      |>
+    ];
+
+
+(* ::Subsubsubsubsection::Closed:: *)
+(*Structured*)
+
+
+
 normalizeTokenHandler[{a_String, b__String, ops___?OptionQ}]:=
   Join[
       normalizeTokenHandler[a],
@@ -61,6 +94,28 @@ normalizeTokenHandler[{a_String, b__String, ops___?OptionQ}]:=
         ops
         |>
       ];
+
+
+(* ::Subsubsubsubsection::Closed:: *)
+(*String*)
+
+
+
+normalizeTokenHandler[{start_String, Verbatim[___], end_String, ops___?OptionQ}]:=
+  Join[
+      normalizeTokenHandler[start],
+      <|
+        "Token"->{start, "String", end},
+        "TokenType"->"Atomic",
+        "BlockType"->"Complete",
+        ops
+        |>
+      ];
+
+
+(* ::Subsubsubsubsection::Closed:: *)
+(*Operator*)
+
 
 
 normalizeTokenHandler[{Verbatim[_], op_String, Verbatim[_], ops___?OptionQ}]:=
@@ -75,6 +130,11 @@ normalizeTokenHandler[{Verbatim[_], op_String, Verbatim[_], ops___?OptionQ}]:=
       ]
 
 
+(* ::Subsubsubsubsection::Closed:: *)
+(*Fallbacks*)
+
+
+
 normalizeTokenHandler[a_String]:=
   <|
     "Token"->a,
@@ -84,12 +144,39 @@ normalizeTokenHandler[a_String]:=
     |>
 
 
+getDataFunction[a_]:=
+  (#["Body"]&);
+getTokenType[a_]:=
+  blockTypeToTokenType[
+    a["Token"],
+    Lookup[a, "BlockType", "Default"]
+    ];
+getBlockType[a_]:=
+  "Default"
+
+
+blockTypeToTokenType[_, {"FixedLength", ___}]:=
+  "BlockOpener";
+blockTypeToTokenType[_, {"Structured", ___}]:=
+  "BlockOpener";
+blockTypeToTokenType[t_, {"Delimited", t_, _}]:=
+  "BlockOpener";
+blockTypeToTokenType[t_, {"Delimited", _, t_}]:=
+  "BlockCloser";
+blockTypeToTokenType[_, "Default"]:=
+  "Default";
+blockTypeToTokenType[_, "Operator"]:=
+  "Operator";
+blockTypeToTokenType[_, "Complete"]:=
+  "Default";
+
+
 normalizeTokenHandler[a_Association]:=
   Join[
     <|
-      "DataFunction"->(#["Body"]&),
-      "TokenType"->"Atomic",
-      "BlockType"->"Default"
+      "DataFunction"->getDataFunction[a],
+      "TokenType"->getTokenType[a],
+      "BlockType"->getBlockType[a]
       |>,
     a
     ];
@@ -128,7 +215,7 @@ ConstructParserObject[lexer_, tokenHandlers_]:=
     |>
 
 
-ConstructParserObject[tokenHandlers_]:=
+ConstructParserObject[tokenHandlers_List]:=
   Module[{toks=normalizeTokenHandlers@tokenHandlers},
     <|
       "Lexer"->LexerObject[Keys[toks]],
@@ -137,8 +224,17 @@ ConstructParserObject[tokenHandlers_]:=
     ]
 
 
+ConstructParserObject[a_Association]:=
+  a;
+
+
 (* ::Subsubsection::Closed:: *)
 (*handleToken*)
+
+
+
+(* ::Subsubsubsection::Closed:: *)
+(*idea*)
 
 
 
@@ -169,17 +265,54 @@ Like a.b.c.e + g.f.g.h should be Plus[Dot[a, b, c, e], Dot[g, f, g, h] but the n
 
 
 
+(* ::Subsubsubsection::Closed:: *)
+(*handleToken*)
+
+
+
+(* ::Text:: *)
+(*
+	Handles basic tokens
+*)
+
+
+
 handleToken//Clear
 handleToken[spec_, next_, state_]:=
   Replace[spec["TokenType"],
     {
       "BlockOpener":>
-        openNode[spec, next],
+        openNode[spec, next, state],
       "BlockCloser":>
         closeNode[spec, next, state],
+      "BlockDelimiter":>
+        openOrCloseNode[spec, next, state],
       "Atomic":>
-        closeNode[spec, next, state]
+        closeNode[spec, next, state],
+      "Default":>
+        closeNode[spec, next, state["CurrentNode"], spec["BlockType"]]
       }
+    ]
+
+
+(* ::Subsubsubsection::Closed:: *)
+(*openOrCloseNode*)
+
+
+
+(* ::Text:: *)
+(*
+	Opens or closes a node based on the current block type and what was found
+*)
+
+
+
+openOrCloseNode[spec_, next_, state_]:=
+  Module[{bt=state["BlockType"], tok=next["Token"]},
+    If[MatchQ[bt, {"Delimited", {_, tok}}],
+      closeNode[spec, next, state],
+      openNode[spec, next state]
+      ]
     ]
 
 
@@ -188,23 +321,68 @@ handleToken[spec_, next_, state_]:=
 
 
 
-openNode[spec_, next_, prepNode:True|False:True]:=
-  <|
-    "Node"->
-      If[prepNode,
-        MakeASTNode[
-          If[spec["TokenType"]===Automatic, Automatic, "Compound"], 
-          spec["DataFunction"]@next,
-          next["Token"]
-          ],
-        next
-        ],
-    "Precedence"->Lookup[spec, "Precedence", -Infinity],
-    "BlockType"->
-      spec["BlockType"],
-    "ResponseType"->
-      "OpenNode"
-    |>;
+(* ::Text:: *)
+(*
+	Opens up a new node to fill
+*)
+
+
+
+openNode[spec_, next_, state_, prepNode:True|False:True]:=
+  Switch[spec["BlockType"],
+    "Operator",
+      <|
+        "Node"->
+          If[prepNode,
+            MakeASTNode[
+              If[spec["TokenType"]===Automatic, Automatic, "Compound"], 
+              spec["DataFunction"]@next,
+              next["Token"],
+              spec
+              ],
+            next
+            ],
+        "Precedence"->Lookup[spec, "Precedence", -Infinity],
+        "BlockType"->
+          spec["BlockType"],
+        "ResponseType"->
+          "OpenNode"
+        |>,
+    _,
+     Module[{pushed},
+       pushed = 
+         AddASTNodeData[
+           state["CurrentNode"],
+           MakeASTNode["Atomic", spec["DataFunction"]@next]
+           ];
+       <|
+         "Responses"->{
+           <|
+             "Node"->pushed,
+             "ResponseType"->"EditNode"
+             |>,
+           <|
+            "Node"->
+              If[prepNode,
+                MakeASTNode[
+                  "Compound", 
+                  {},
+                  next["Token"],
+                  spec
+                  ],
+                next
+                ],
+            "Precedence"->Lookup[spec, "Precedence", -Infinity],
+            "BlockType"->
+              spec["BlockType"],
+            "ResponseType"->
+              "OpenNode"
+            |>
+           },
+         "ResponseType"->{"EditNode", "OpenNode"}
+         |>
+       ]
+    ];
 
 
 (* ::Subsubsubsection::Closed:: *)
@@ -212,22 +390,51 @@ openNode[spec_, next_, prepNode:True|False:True]:=
 
 
 
-structuredNodeMatchQ[nodes_, blocks_]:=
-  Block[{},
+structuredNodeMatchQ[node_, blocks_]:=
+  Block[
+    {
+      main = GetASTNodeProperty[node, "Token"], 
+      n = DeleteCases[#["Token"]&/@GetASTNodeProperty[node, "Children"], None]
+      },
+    PrependTo[n, main];
     MapThread[
-      If[#["Token"]=!=#2,
+      If[#=!=#2,
         PackageRaiseException[Automatic,
-          "Got unexpected token ``", 
-          #2
+          "Expected token '``' got '``'", 
+          #2,
+          #
           ]
         ]&,
       {
-        nodes,
-        blocks[[;;Length@nodes]]
+        n[[;;Min@{Length@n, Length@blocks}]],
+        blocks[[;;Min@{Length@n, Length@blocks}]]
         }
       ];
-    Length@blocks==Length@nodes
+    Length@blocks==Length@n
     ]
+
+
+(* ::Subsubsubsection::Closed:: *)
+(*checkClose*)
+
+
+
+checkClose[node_, addMe_, bt:{"Delimited", {start_, end_}}]:=
+  (
+    If[GetASTNodeProperty[node, "Token"]=!=start, 
+      PackageRaiseException[Automatic,
+        "Expected opening token `` got `` in delimited pair ('``', '``')",
+        start, GetASTNodeProperty[node, "Token"],
+        start, end
+        ]
+      ];
+    GetASTNodeProperty[addMe, "Token"]===end
+    )
+checkClose[node_, bt:{"Delimited", {start_, end_}}]:=
+  checkClose[node, GetASTNodeProperty[node, "Children"][[-1]], bt];
+checkClose[node_, bt:{"Structured", blocks:{__}}]:=
+  structuredNodeMatchQ[node, blocks];
+checkClose[___]:=False
 
 
 (* ::Subsubsubsection::Closed:: *)
@@ -243,42 +450,80 @@ structuredNodeMatchQ[nodes_, blocks_]:=
 
 
 closeNode//Clear
+
+
+(* ::Subsubsubsubsection::Closed:: *)
+(*Delimited*)
+
+
+
 closeNode[spec_, next_, node_, bt:{"Delimited", {start_, end_}}]:=
-  <|
-    "Node"->
+  Module[{n},
+    n=
       AddASTNodeData[node, 
-        MakeASTNode["Atomic", spec["DataFunction"]@next, next["Token"]]
-        ],
-    "BlockType"->bt,
-    "Precedence"->Lookup[spec, "Precedence", -Infinity],
-    "ResponseType"->
-      If[spec["Token"]=!=end,
-        "EditNode",
-        "CloseNode"
-        ]
-    |>;
+        MakeASTNode["Atomic", spec["DataFunction"]@next, next["Token"], spec]
+        ];
+    <|
+      "Node"->n,
+      "BlockType"->bt,
+      "Precedence"->Lookup[spec, "Precedence", -Infinity],
+      "ResponseType"->
+        If[!checkClose[n, bt],
+          "EditNode",
+          "CloseNode"
+          ]
+      |>
+    ];
+
+
+(* ::Subsubsubsubsection::Closed:: *)
+(*Structured*)
+
+
+
+(* ::Text:: *)
+(*
+	For things like for (a...) {b...}
+*)
+
+
+
 closeNode[spec_, next_, node_, bt:{"Structured", blocks:{__}}]:=
   Module[{main},
     main=
       AddASTNodeData[node, 
-        MakeASTNode["Atomic", spec["DataFunction"]@next, next["Token"]]
+        MakeASTNode["Atomic", spec["DataFunction"]@next, next["Token"], spec]
         ];
     <|
       "Node"->main,
       "BlockType"->bt,
       "Precedence"->Lookup[spec, "Precedence", -Infinity],
       "ResponseType"->
-        If[structuredNodeMatchQ[main["Children"], blocks],
+        If[!checkClose[node, bt],
           "EditNode",
           "CloseNode"
           ]
       |>
     ];
+
+
+(* ::Subsubsubsubsection::Closed:: *)
+(*FixedLength*)
+
+
+
+(* ::Text:: *)
+(*
+	For things like eval f g h
+*)
+
+
+
 closeNode[spec_, next_, node_, bt:{"FixedLength", n_}]:=
   <|
     "Node"->
       AddASTNodeData[node, 
-        MakeASTNode["Atomic", spec["DataFunction"]@next, next["Token"]]
+        MakeASTNode["Atomic", spec["DataFunction"]@next, next["Token"], spec]
         ],
     "BlockType"->bt,
     "Precedence"->Lookup[spec, "Precedence", -Infinity],
@@ -288,16 +533,78 @@ closeNode[spec_, next_, node_, bt:{"FixedLength", n_}]:=
         "CloseNode"
         ]
     |>;
+
+
+(* ::Subsubsubsubsection::Closed:: *)
+(*Complete*)
+
+
+
+(* ::Text:: *)
+(*
+	For things like strings where the Body is really a complete node
+*)
+
+
+
+closeNode[spec_, next_, node_, bt:"Complete"]:=
+  <|
+    "Node"->
+      With[{d=spec["DataFunction"]@next},
+        AddASTNodeData[node, 
+          {
+            MakeASTNode["Atomic", d[[1]], None, <||>],
+            MakeASTNode["Atomic", d[[2]], next["Token"], spec]
+            }
+          ]
+        ],
+    "Precedence"->Lookup[spec, "Precedence", -Infinity],
+    "BlockType"->node["BlockType"],
+    "ResponseType"->"EditNode"
+    |>
+
+
+(* ::Subsubsubsubsection::Closed:: *)
+(*Default*)
+
+
+
+(* ::Text:: *)
+(*
+	For things like ...;
+*)
+
+
+
 closeNode[spec_, next_, node_, bt:"Default"]:=
   <|
     "Node"->
-      AddASTNodeData[node, 
-        MakeASTNode["Atomic", spec["DataFunction"]@next, next["Token"]]
+      With[{d=spec["DataFunction"]@next},
+        AddASTNodeData[node, 
+          If[ListQ@d,
+            MakeASTNode["Atomic", #, next["Token"], spec]&/@d,
+            MakeASTNode["Atomic", d, next["Token"], spec]
+            ]
+          ]
         ],
     "Precedence"->Lookup[spec, "Precedence", -Infinity],
     "BlockType"->node["BlockType"],
     "ResponseType"->"EditNode"
     |>;
+
+
+(* ::Subsubsubsubsection::Closed:: *)
+(*Current*)
+
+
+
+(* ::Text:: *)
+(*
+	Not sure why I implemented this?
+*)
+
+
+
 closeNode[spec_, next_, node_, bt:"Current"]:=
   <|
     "Node"->node,
@@ -305,16 +612,37 @@ closeNode[spec_, next_, node_, bt:"Current"]:=
     "BlockType"->node["BlockType"],
     "ResponseType"->"CloseNode"
     |>
+
+
+(* ::Subsubsubsubsection::Closed:: *)
+(*Operator*)
+
+
+
+(* ::Text:: *)
+(*
+	For things like a.b or b+c
+*)
+
+
+
 closeNode[spec_, next_, node_, bt:"Operator"]:=
   <|
     "Node"->
       AddASTNodeData[node, 
-        spec["DataFunction"]@next
+        MakeASTNode["Atomic", spec["DataFunction"]@next, None, <||>]
         ],
     "Precedence"->Lookup[spec, "Precedence", 0],
     "BlockType"->node["BlockType"],
     "ResponseType"->"EditNode"
     |>
+
+
+(* ::Subsubsubsubsection::Closed:: *)
+(*Fallbacks*)
+
+
+
 closeNode[spec_, next_, node_, e_]:=
   PackageRaiseException[Automatic, "Invalid block type: ``", e];
 closeNode[spec_, next_, state_]:=
@@ -326,6 +654,15 @@ closeNode[spec_, next_, state_]:=
 
 
 
+(* ::Text:: *)
+(*
+	Closes a node and opens a new one with the current one as data.
+	Basically a way to close a node, open a node, then set that node as a parent node of the prior one.
+	Requires less tree manipulation, though.
+*)
+
+
+
 closeOpenNode[spec_, next_, state_]:=
   Module[{closed=closeNode[spec, next, state]},
     <|
@@ -333,7 +670,8 @@ closeOpenNode[spec_, next_, state_]:=
         MakeASTNode[
           "Compound", 
           {closed["Node"]},
-          next["Token"]
+          next["Token"],
+          spec
           ],
       "Precedence"->spec["Precedence"],
       "BlockType"->spec["BlockType"],
@@ -347,11 +685,18 @@ closeOpenNode[spec_, next_, state_]:=
 
 
 
+(* ::Text:: *)
+(*
+	Handles precedence relations for operators
+*)
+
+
+
 handleOperator[spec_, next_, state_]:=
   Which[
     state["Precedence"]<spec["Precedence"],
       (* the next node has a higher precedence than the current node so we simply open a new node *)
-      openNode[spec, next],
+      openNode[spec, next, state],
     state["Precedence"]==spec["Precedence"],
       (* 
                 the next node has a equal precedence to the current node so we close off the current one 
@@ -368,6 +713,11 @@ handleOperator[spec_, next_, state_]:=
 
 (* ::Subsubsection::Closed:: *)
 (*ApplyParser*)
+
+
+
+(* ::Subsubsubsection::Closed:: *)
+(*idea*)
 
 
 
@@ -470,14 +820,6 @@ continueParse[handler_, next_]:=
 
 
 
-(* ::Text:: *)
-(*
-	The original idea was basically that a node could open a block, close a block, or be atomic
-	Instead, we\[CloseCurlyQuote]re going to move to an operator-precedence parser. This kind of thing can operate fine *if* properly ordered precedences so we\[CloseCurlyQuote]ll call it inside the precedence parser.
-*)
-
-
-
 manageResponse[{stack_, state_}, resp_, toks_]:=
   imanageResponse[{stack, state}, resp["ResponseType"], resp, toks];
 manageResponse~SetAttributes~HoldFirst;
@@ -495,7 +837,9 @@ imanageResponse[{stack_, state_}, type_, resp_, toks_]:=
     "CloseNode",
       state = stack[[-1]];
       stack = stack[[;;-2]];
-      state["CurrentNode"] = AddASTNodeData[state["CurrentNode"], resp["Node"]],
+      state["CurrentNode"] = AddASTNodeData[state["CurrentNode"], resp["Node"]];
+      (* need to cascade our close, potentially *)
+      manageCascadingClose[{state, stack}],
     "ReturnNode", 
       (* much like closing a node, but rather than inserting it into its parent we simply set the node state *)
       state = stack[[-1]];
@@ -511,6 +855,20 @@ imanageResponse[{stack_, state_}, type_, resp_, toks_]:=
         ]
     ];
 imanageResponse~SetAttributes~HoldFirst;
+
+
+(* ::Subsubsubsection::Closed:: *)
+(*manageCascadingClose*)
+
+
+
+manageCascadingClose[{state_, stack_}]:=
+  With[{node=state["CurrentNode"]},
+    If[checkClose[node, state["BlockType"]],
+      imanageResponse[{stack, state}, "CloseNode", <|"Node"->node|>, None]
+      ]
+    ];
+manageCascadingClose~SetAttributes~HoldFirst;
 
 
 (* ::Subsubsubsection::Closed:: *)
@@ -593,6 +951,10 @@ parseStream~SetAttributes~HoldFirst;
 
 
 
+Options[ParseStream]=
+  {
+    "ParseStrict"->True
+    };
 ParseStream[parser_, stream_]:=
   Module[
     {
@@ -600,14 +962,8 @@ ParseStream[parser_, stream_]:=
       handlers = parser["Handlers"],
       ast = ASTObject[],
       state = <||>,
-      current,
-      blockType,
-      data,
-      next,
-      handler,
       stack = {},
-      prec,
-      resp
+      tree
       },
     Internal`WithLocalSettings[
       None,
@@ -615,6 +971,18 @@ ParseStream[parser_, stream_]:=
       state["BlockType"] = "Default";
       state["Precedence"] = -Infinity;
       parseStream[{stack, state, handlers}, TokenStreamer@toks];
+      tree = state["CurrentNode"];
+      If[(OptionValue["ParseStrict"]===False),
+        tree =
+          Fold[
+            AddASTNodeData[
+              #2,
+              #
+              ]&,
+            tree
+            ];
+        stack = {};
+        ];
       {
         stack,
         InterfaceModify[ASTObject, ast, ReplacePart[#, "Tree"->state["CurrentNode"]]&]
@@ -624,17 +992,22 @@ ParseStream[parser_, stream_]:=
     ]
 
 
-ApplyParser[parser_, stream_]:=
-  Module[{stack, ast},
-    {stack, ast}=
-      Block[{LexerToken = ConstructLexToken}, ParseStream[parser, stream]];
-    If[Length@stack>0,
-      PackageRaiseException[
-        "Incomplete node parse at end of stream"
-        ]
-      ];
-    ast
-    ]
+Options[ApplyParser]=
+  Options[ParseStream];
+ApplyParser[parser_, stream_, ops:OptionsPattern[]]:=
+  PackageExceptionBlock["Parse"]@
+    Module[{stack, ast},
+      {stack, ast}=
+        Block[{LexerToken = ConstructLexToken}, 
+          ParseStream[parser, stream, ops]
+          ];
+      If[Length@stack>0,
+        PackageRaiseException[
+          "Incomplete node at end of stream"
+          ]
+        ];
+      ast
+      ]
 
 
 End[];

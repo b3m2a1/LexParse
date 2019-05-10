@@ -8,6 +8,8 @@ EBNFAlternatives::usage="";
 EBNFOptional::usage="";
 EBNFRepeated::usage="";
 EBNFAny::usage="";
+EBNFStringData::usage="";
+EBNFExcept::usage="Only has meaning in the context of escape character";
 
 
 BuildEBNFGrammar::usage="";
@@ -46,12 +48,30 @@ Begin["`Private`"];
 
 
 
+Unprotect[
+  EBNFAlternatives, EBNFSequence, EBNFRule, EBNFOptional, EBNFRepeated,
+  EBNFAny, EBNFStringData, EBNFExcept
+  ];
+Clear[
+  EBNFAlternatives, EBNFSequence, EBNFRule, EBNFOptional, EBNFRepeated,
+  EBNFAny, EBNFStringData, EBNFExcept
+  ];
+Protect[
+  EBNFAlternatives, EBNFSequence, EBNFRule, EBNFOptional, EBNFRepeated,
+  EBNFAny, EBNFStringData, EBNFExcept
+  ]; (* protecting against my tendency to accidentally type := instead of \[RuleDelayed] *)
+
+
 EBNFRule[name_, structure_];
 EBNFSequence[seq__];
 EBNFAlternatives[alts__];
 EBNFOptional[structure_, val_];
 EBNFRepeated[structure_];
+
+
 EBNFAny[];
+EBNFStringData[];
+EBNFExcept[pat_, tags_];
 
 
 (* ::Subsubsubsection::Closed:: *)
@@ -66,6 +86,10 @@ normalizeSlots[a_]:=
   a/.Verbatim[Blank][s_Symbol]:>Blank[SymbolName[s]]
 
 
+BuildEBNFGrammarValue[Verbatim[Except][a_, b_]]:=
+  EBNFExcept[BuildEBNFGrammarValue[a], BuildEBNFGrammarValue[b]];
+BuildEBNFGrammarValue[String|String[]|Verbatim[_String]]:=
+  EBNFStringData[];
 BuildEBNFGrammarValue[Verbatim[Alternatives][a__]]:=
   BuildEBNFGrammarValue/@EBNFAlternatives[a]//normalizeSlots;
 
@@ -172,6 +196,24 @@ $convertEBNFTokenRules=
     {
       EBNFAlternatives[a___]:>
         CollectEBNFTokens@{a},
+      (* there are a few special formats where we _don't_ want all apparent tokens *)
+      EBNFSequence[tag_, EBNFStringData[], EBNFExcept[escape_, end_]]:>
+        Flatten@With[
+          {
+            spec=Thread[{"String", Flatten@CollectEBNFTokens[{end}]}],
+            main=CollectEBNFTokens[{tag}]
+            },
+          Table[
+            t->spec,
+            {t, main}
+            ]
+          ],
+      EBNFSequence[tag_, EBNFStringData[]]:>
+        Sequence@@CollectEBNFTokens[{EBNFSequence[tag, EBNFStringData[], tag]}],
+      EBNFSequence[tag_, EBNFStringData[], end:Except[_EBNFExcept]]:>
+        Sequence@@CollectEBNFTokens[{
+          EBNFSequence[tag, EBNFStringData[], EBNFExcept["\\", end]]
+          }],
       EBNFSequence[e___]:>
         CollectEBNFTokens@{e},
       EBNFOptional[arg_]:>
@@ -223,7 +265,12 @@ glomOptional~SetAttributes~Listable;
 
 
 BuildEBNFLexer[e_EBNFGrammar]:=
-  LexerObject[DeleteDuplicates@Flatten@Values@CollectEBNFTokens[e]];
+  LexerObject@
+    Replace[
+      DeleteDuplicates@Flatten@Values@CollectEBNFTokens[e],
+      (a_->b_):>Flatten[{a, b}],
+      1
+      ];
 
 
 (* ::Subsubsection::Closed:: *)
@@ -250,8 +297,14 @@ $convertEBNFPatternRules=
         {"Delimited", {start, end}},
       EBNFSequence[EBNFAny[], op_, EBNFAny[]]:>
         "Operator",
+      EBNFSequence[op_, anys:EBNFAny[]..]:>
+        {"FixedLength", Length@{anys}},
+      EBNFSequence[op_, anys:EBNFAny[]..]:>
+        {"FixedLength", Length@{anys}},
       EBNFSequence[EBNFAny[], op_]:>
         "Default",
+      EBNFSequence[_, EBNFStringData[], ___]:>
+        "Complete",
       EBNFSequence[struct:Except[EBNFAny[]]..]:>
         {"Structured", Replace[CollectEBNFTokens[{struct}], {a_, ___}:>a, 1]},
       EBNFRule[
@@ -276,15 +329,22 @@ CollectEBNFTokenPatterns[rules_List]:=
       tokens=Association@CollectEBNFTokens[rules],
       blocks=Association@collectTokenBlockTypes[rules]
       },
-   Throw@Flatten@MapIndexed[
-      Table[
-        <|
-          "Token"->t,
-          "BlockType"->blocks[#2[[1]]],
-          "BlockName"->#2[[1, 1]],
-          Sequence@@#2[[1, 2]]
-          |>,
-        {t, #}
+   DeleteDuplicatesBy[#Token&]@Flatten@Values@MapIndexed[
+      With[{k=#2[[1, 1]], b=blocks[#2[[1, 1]]]},
+        MapIndexed[
+          <|
+            "Token"->Replace[#, (a_->_):>a],
+            If[b[[1]]=="Delimited",
+              "TokenType"->If[EvenQ[#2[[1]]], "BlockCloser", "BlockOpener"],
+              Nothing
+              ],
+            "BlockType"->
+                If[Length[b]==1, b[[1]], b],
+            "BlockName"->k[[1]],
+            Sequence@@k[[2]]
+            |>&,
+          Flatten@#
+          ]
         ]&,
       tokens
       ]
@@ -305,11 +365,13 @@ CollectEBNFTokenPatterns[rules_List]:=
 
 BuildEBNFParser[e_EBNFGrammar]:=
   Module[{lexer=BuildEBNFLexer[e], p},
-    p = ParserObject[
-      lexer,
-      CollectEBNFTokenPatterns[e]
-      ];
-    InterfaceModify[ParserObject,
+    p = 
+      ParserObject[
+        lexer,
+        CollectEBNFTokenPatterns[e]
+        ];
+    InterfaceModify[
+      ParserObject,
       p,
       Append[#, "Grammar"->e]&
       ]
